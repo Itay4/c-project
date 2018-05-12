@@ -1,18 +1,13 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
-typedef int bool;
-#define true 1
-#define false 0
-#define NUM_OF_ROWS 9
-#define NUM_OF_COLUMNS 9
-
-typedef struct  {
-	int number;
-	bool isFixed;
-} cell;
+#include "main_aux.h"
 
 bool isValid(int number, cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column) {
+    /*
+     * Checks if given number is valid to set in given game board and position according to sudoku game rules
+     */
+
     int i = 0;
     int sectorRow = 3 * (row / 3);
     int sectorCol = 3 * (column / 3);
@@ -35,21 +30,15 @@ bool isValid(int number, cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int c
     return true;
 }
 
-void delFromArr(int position, int numbersLeft, int availableNumbers[]) {
-    int c;
-    for ( c = position - 1 ; c < numbersLeft - 1 ; c++ ) {
-         availableNumbers[c] = availableNumbers[c+1];
-     }
-}
-
 bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column) {
+    /*
+     * Recursive backtrack to generate and solve sudoku board
+     */
 	
     int nextNum;
     int randomIndex;
     int availableNumbers[] = {1, 2, 3, 4, 5, 6, 7, 8, 9}; 
     int numbersLeft = 9;
-    
-    
 
     if (row == 9) {
         return true;
@@ -83,7 +72,10 @@ bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int co
     return false;
 }
 
-void setFixedCells(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells){
+void setFixedCells(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells) {
+    /*
+     * Randomly chooses given number of cells in the game board and sets them as fixed
+     */
     int i, randX, randY;
     for (i = 0; i < fixedCells; i++){
         while (true) {
@@ -99,6 +91,10 @@ void setFixedCells(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells){
 }
 
 void generateBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells){
+    /*
+     * Generate sudoku game board
+     */
+
     recursiveBacktrack(board, 0, 0);
     setFixedCells(board, fixedCells);
 }

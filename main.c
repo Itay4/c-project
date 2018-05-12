@@ -5,9 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#define MAX_CMD_SIZE 10
-#define NUM_OF_ROWS 9
-#define NUM_OF_COLUMNS 9
 
 int main() {
 	
@@ -28,19 +25,12 @@ int main() {
 	}
 	srand(fixedCells);
 	generateBoard(board, fixedCells);
-	printBoard(board); 
-	fgets(command, MAX_CMD_SIZE, stdin);
-	parseCommand(command, parsedCommand);
-	
-	if (strcmp(parsedCommand[0], "set") == 0) {
-	} else if (strcmp(parsedCommand[0], "hint") == 0) {
-	} else if (strcmp(parsedCommand[0], "validate") == 0) {
-	} else if (strcmp(parsedCommand[0], "restart") == 0) {
-	} else if (strcmp(parsedCommand[0], "exit") == 0) {
-	} else { 
-		printf("Error: invalid command\n");
+	printBoard(board);
+	while (true) {
+		fgets(command, MAX_CMD_SIZE, stdin);
+		parseCommand(command, parsedCommand);
+		executeCommand(parsedCommand, board, command);
 	}
-
 	return 0;
 }
 

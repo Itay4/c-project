@@ -1,15 +1,12 @@
-typedef int bool;
-#define true 1
-#define false 0
 #include <stdio.h>
-typedef struct  {
-	int number;
-	bool isFixed;
-} cell;
-#define NUM_OF_ROWS 9
-#define NUM_OF_COLUMNS 9
+#include <string.h>
+#include <stdlib.h>
+#include "main_aux.h"
 
 void initializeBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
+	/*
+	 * Initializes the sudoku board cells with default values: number - 0, isFixed - false
+	 */
 	int i,j;
 	for (i=0; i < 10; i++){
 	   for (j=0; j < 10; j++){
@@ -20,10 +17,16 @@ void initializeBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
 }
 
 void printSeperator() {
+	/*
+	 * Helper function to printBoard() which prints block seperators
+	 */
 	printf("----------------------------------\n");
 }
 
 void printBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
+	/*
+	 * Prints the sudoku board according to the format
+	 */
 	int i,j;
 	printSeperator();
 	for (i=0; i < NUM_OF_ROWS; i++) {
@@ -49,6 +52,29 @@ void printBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
 	printSeperator();
 }
 
+void executeCommand(char *parsedCommand[4], cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], char* command) {
+	/*
+	 * Evaluates game command (SET/HINT/VALIDATE/RESTART/EXIT) and calls the relavent function to execute it
+	 */
 
-
-
+	if (false) { /* DUMMY USE OF BOARD FOR COMPLIATION - REMOVE AFTER IMPLEMENTING COMMANDS */
+		printf("%d", board[0][0].number);
+	}
+	
+	if (strcmp(parsedCommand[0], "set") == 0) {
+		/* TODO: set */
+	} else if (strcmp(parsedCommand[0], "hint") == 0) {
+		/* TODO: hint */
+	} else if (strcmp(parsedCommand[0], "validate") == 0) {
+		/* TODO: validate */
+	} else if (strcmp(parsedCommand[0], "restart") == 0) {
+		/* TODO: restart */
+	} else if (strcmp(parsedCommand[0], "exit") == 0) {
+		printf("Exiting…\n");
+		free(command);
+		exit(0);
+		/* TODO: exit */
+	} else { /* Invalid command */
+		printf("Error: invalid command\n");
+	}
+}
