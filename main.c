@@ -9,13 +9,16 @@
 int main() {
 	
 	cell board[NUM_OF_ROWS][NUM_OF_COLUMNS];
-	int fixedCells;
+	int fixedCells, error;
 	char* command = malloc(MAX_CMD_SIZE);
 	char *parsedCommand[4];
 	initializeBoard(board);
 	while (true) {
 		printf("Please enter the number of cells to fill [0-80]:\n");
-		scanf("%d", &fixedCells);
+		error = scanf("%d", &fixedCells);
+		if (error != 1){
+			memoryError("main"); /* NEEDS TO BE CHECKED */
+		}
 		getchar(); /*Required cause of scanf-printf-fgets issue*/
 		if (inputValid(fixedCells)){
 			break;
@@ -26,10 +29,14 @@ int main() {
 	srand(fixedCells);
 	generateBoard(board, fixedCells);
 	printBoard(board);
-	while (true) {
-		fgets(command, MAX_CMD_SIZE, stdin);
+	while (fgets(command, MAX_CMD_SIZE, stdin) != NULL) {
 		parseCommand(command, parsedCommand);
 		executeCommand(parsedCommand, board, command);
+	}
+	if (feof(stdin)) { /* EOF */
+		exitGame(command);
+	} else if (ferror(stdin)) { /* Error */
+		memoryError("main");
 	}
 	return 0;
 }

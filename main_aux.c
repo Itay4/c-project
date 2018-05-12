@@ -22,3 +22,20 @@ void delFromArr(int position, int numbersLeft, int availableNumbers[]) {
          availableNumbers[c] = availableNumbers[c+1];
      }
 }
+
+void exitGame(char* command){
+	/*
+     * Free up memeory and exists the program
+     */
+	printf("Exiting…\n");
+	free(command);
+	exit(0);
+}
+
+void memoryError(char* func){
+	/*
+     * Prints error message and exists the program
+     */
+	printf("Error: %s has failed\n", func);
+	exit(0);
+}

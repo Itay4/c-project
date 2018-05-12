@@ -60,7 +60,7 @@ void executeCommand(char *parsedCommand[4], cell board[NUM_OF_ROWS][NUM_OF_COLUM
 	if (false) { /* DUMMY USE OF BOARD FOR COMPLIATION - REMOVE AFTER IMPLEMENTING COMMANDS */
 		printf("%d", board[0][0].number);
 	}
-	
+
 	if (strcmp(parsedCommand[0], "set") == 0) {
 		/* TODO: set */
 	} else if (strcmp(parsedCommand[0], "hint") == 0) {
@@ -70,9 +70,7 @@ void executeCommand(char *parsedCommand[4], cell board[NUM_OF_ROWS][NUM_OF_COLUM
 	} else if (strcmp(parsedCommand[0], "restart") == 0) {
 		/* TODO: restart */
 	} else if (strcmp(parsedCommand[0], "exit") == 0) {
-		printf("Exiting…\n");
-		free(command);
-		exit(0);
+		exitGame(command);
 		/* TODO: exit */
 	} else { /* Invalid command */
 		printf("Error: invalid command\n");

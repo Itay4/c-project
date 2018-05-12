@@ -20,5 +20,9 @@ bool inputValid(int num);
 
 void delFromArr(int position, int numbersLeft, int availableNumbers[]);
 
+void exitGame(char* command);
+
+void memoryError(char* func);
+
 #endif /* MAIN_AUX_H_ */
 
