@@ -1,1 +1,1 @@
-# c-project
+# sudoku C project
