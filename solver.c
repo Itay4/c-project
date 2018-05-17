@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include "main_aux.h"
+#include "game.h"
 
 bool isValid(int number, cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column) {
     /*
@@ -30,7 +31,7 @@ bool isValid(int number, cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int c
     return true;
 }
 
-bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column) {
+bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column, bool random) {
     /*
      * Recursive backtrack to generate and solve sudoku board
      */
@@ -47,23 +48,27 @@ bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int co
     /* If cell number is already set, no need to change and recruse to next cell */
     if (board[row][column].number) {
         if (column == 8) {
-            if (recursiveBacktrack(board, row+1, 0)) return true;
+            if (recursiveBacktrack(board, row+1, 0, random)) return true;
         } else {
-            if (recursiveBacktrack(board, row, column+1)) return true;
+            if (recursiveBacktrack(board, row, column+1, random)) return true;
         }
         return false;
     }
     while (numbersLeft > 0) {
-        randomIndex = rand() % numbersLeft;
-        nextNum = availableNumbers[randomIndex];
+    	if (random){ 		/* Randomized backtracking */
+			randomIndex = rand() % numbersLeft;
+			nextNum = availableNumbers[randomIndex];
+    	} else{    		/* Deterministic backtracking */
+    		nextNum = availableNumbers[0];
+    	}
         numbersLeft--;
         if(isValid(nextNum, board, row, column)) {
             board[row][column].number = nextNum;
             delFromArr(randomIndex, numbersLeft, availableNumbers);
             if (column == 8) {
-                if (recursiveBacktrack(board, row + 1, 0)) return true;
+                if (recursiveBacktrack(board, row + 1, 0, random)) return true;
             } else {
-                if (recursiveBacktrack(board, row, column + 1)) return true;
+                if (recursiveBacktrack(board, row, column + 1, random)) return true;
             }
             /* Failed to find a valid value */
             board[row][column].number = 0;
@@ -90,12 +95,32 @@ void setFixedCells(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells) {
     }
 }
 
-void generateBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells){
+void generateSolvedBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells){
     /*
-     * Generate sudoku game board
+     * Generates solved sudoku game board
      */
 
-    recursiveBacktrack(board, 0, 0);
+    recursiveBacktrack(board, 0, 0, true);
     setFixedCells(board, fixedCells);
+}
+
+void generateUserBoard(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
+    /*
+     * Generates unsolved user sudoku game board
+     */
+	int i,j;
+	for (i=0; i < NUM_OF_ROWS; i++) {
+		for (j=0; j < NUM_OF_COLUMNS; j++) {
+			if (solved_board[i][j].isFixed) {
+				user_board[i][j].number = solved_board[i][j].number;
+				user_board[i][j].isFixed = true;
+			}
+			else{
+				user_board[i][j].number = UNASSIGNED;
+				user_board[i][j].isFixed = false;
+			}
+		}
+	}
+	printBoard(user_board);
 }
 
