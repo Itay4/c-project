@@ -161,6 +161,8 @@ void set(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int column, int row, int val)	
 		printBoard(board);
 	} else if (board[row - 1][column - 1].isFixed) {
 		printf(FIXED_ERROR);
+	} else if (board[row - 1][column - 1].number == val) {
+		printBoard(board);
 	} else if (validCheck(board, column - 1, row - 1, val)){
 			board[row - 1][column - 1].number = val;
 			printBoard(board);
@@ -177,7 +179,7 @@ void validate(cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell solved_board[NU
 	cell copy_of_user_board[NUM_OF_ROWS][NUM_OF_COLUMNS];
 	bool solvable;
 	copyBoard(user_board, copy_of_user_board);
-	solvable = recursiveBacktrack(copy_of_user_board, 0, 0, false);
+	solvable = recursiveBacktrack(copy_of_user_board, 0, 0, false); /* Deterministic backtracking */
 	if (solvable){
 		printf("Validation passed: board is solvable\n");
 		copyBoard(copy_of_user_board, solved_board);
