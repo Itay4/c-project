@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <time.h>
 
-int main() {
-	restart();
-	return 0;
+int main(int argc, char *argv[]) {
+	restart(atoi(argv[1]));
+	return argc;
 }
 
 

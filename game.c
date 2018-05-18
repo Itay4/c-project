@@ -179,7 +179,7 @@ void validate(cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell solved_board[NU
 	cell copy_of_user_board[NUM_OF_ROWS][NUM_OF_COLUMNS];
 	bool solvable;
 	copyBoard(user_board, copy_of_user_board);
-	solvable = recursiveBacktrack(copy_of_user_board, 0, 0, false); /* Deterministic backtracking */
+	solvable = deterministicBacktrack(copy_of_user_board); /* Deterministic backtracking */
 	if (solvable){
 		printf("Validation passed: board is solvable\n");
 		copyBoard(copy_of_user_board, solved_board);
@@ -198,7 +198,7 @@ void hint(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], int column, int row){
 		printf("Hint: set cell to %d\n", hint);
 }
 
-void restart(){
+void restart(int seed){
 	/*
 	 * Restarting the game
 	 */
@@ -223,7 +223,7 @@ void restart(){
 			printf("Error: Invalid number of cells to fill (should be between 0 and 80)\n");
 		}
 	}
-	srand(fixedCells); /* NEEDS TO BE CHANGED WITH SEED */
+	srand(seed); /* NEEDS TO BE CHANGED WITH SEED */
 	generateSolvedBoard(solved_board, fixedCells);
 	generateUserBoard(solved_board, user_board);
 	while (fgets(command, MAX_CMD_SIZE, stdin) != NULL) {
@@ -236,8 +236,3 @@ void restart(){
 		memoryError("main");
 	}
 }
-
-
-
-
-

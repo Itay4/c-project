@@ -8,5 +8,7 @@ int recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int col
 void setFixedCells(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells);
 void generateSolvedBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells);
 void generateUserBoard(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS]);
+bool deterministicBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]);
+
 #endif /* SOLVER_H_ */
 
