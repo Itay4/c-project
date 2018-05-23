@@ -80,6 +80,9 @@ bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int co
 }
 
 bool isSafe(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int number, int row, int column) {
+    /*
+     * Check if safe to insert number in row and column in board according to sudoku game rules
+     */
     int i, j, r, c;
     for(i = 0; i < 9; i++) {
         if(board[row][i].number == number) {
@@ -159,10 +162,8 @@ void generateSolvedBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells
     /*
      * Generates solved sudoku game board
      */
-
     recursiveBacktrack(board, 0, 0);
     setFixedCells(board, fixedCells);
-    
 }
 
 void generateUserBoard(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {

@@ -7,6 +7,8 @@
 #include "game.h"
 #include "solver.h"
 
+bool gameOverFlag;
+
 void initializeBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
 	/*
 	 * Initializes the sudoku board cells with default values: number - 0, isFixed - false
@@ -66,12 +68,11 @@ void executeCommand(char *parsedCommand[4], cell user_board[NUM_OF_ROWS][NUM_OF_
 	 * Evaluates game command (SET/HINT/VALIDATE/RESTART/EXIT) and calls the relavent function to execute it
 	 */
 
-
-	if (strcmp(parsedCommand[0], "set") == 0) {
+	if (strcmp(parsedCommand[0], "set") == 0 && !gameOverFlag) {
 		set(user_board, atoi(parsedCommand[1]),atoi(parsedCommand[2]), atoi(parsedCommand[3]));
-	} else if (strcmp(parsedCommand[0], "hint") == 0) {
+	} else if (strcmp(parsedCommand[0], "hint") == 0 && !gameOverFlag) {
 		hint(solved_board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
-	} else if (strcmp(parsedCommand[0], "validate") == 0) {
+	} else if (strcmp(parsedCommand[0], "validate") == 0  && !gameOverFlag) {
 		validate(user_board, solved_board);
 	} else if (strcmp(parsedCommand[0], "restart") == 0) {
 		restart();
@@ -146,6 +147,7 @@ void gameOver(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]){
         }
     }
     if (over){
+    	gameOverFlag = true;
         printf(GAME_OVER);
     }
 }
@@ -192,7 +194,7 @@ void hint(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], int column, int row){
 	 * Prints the value of the cell <row,column> on the last solved sudoku board
 	 */
 	int hint;
-		hint = solved_board[row][column].number;
+		hint = solved_board[row-1][column-1].number;
 		printf("Hint: set cell to %d\n", hint);
 }
 
@@ -205,6 +207,7 @@ void restart(int seed){
 	int fixedCells, error;
 	char* command = malloc(MAX_CMD_SIZE);
 	char *parsedCommand[4];
+	gameOverFlag = false;
 	setvbuf(stdout,NULL,_IONBF,0);
 	initializeBoard(solved_board);
 	initializeBoard(user_board);
@@ -218,21 +221,16 @@ void restart(int seed){
 		if (inputValid(fixedCells)){
 			break;
 		} else {
-			printf("Error: Invalid number of cells to fill (should be between 0 and 80)\n");
+			printf("Error: invalid number of cells to fill (should be between 0 and 80)\n");
 		}
 	}
-
 	srand(seed); 
-
 	generateSolvedBoard(solved_board, fixedCells);
 	generateUserBoard(solved_board, user_board);
 	while((getchar())!='\n');
 	while (fgets(command, MAX_CMD_SIZE, stdin) != NULL) {
-
 		parseCommand(command, parsedCommand);
-		
 		executeCommand(parsedCommand, user_board, solved_board, command);
-
 	}
 	if (feof(stdin)) { /* EOF */
 		exitGame(command);
