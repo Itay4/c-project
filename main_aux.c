@@ -15,7 +15,7 @@ bool inputValid(int num) {
 
 void delFromArr(int position, int numbersLeft, int availableNumbers[]) {
 	/*
-     * Simulates deletion of elemnt in given position in array by shifting left elements 
+     * Simulates deletion of element in given position in array by shifting left elements 
      */
     int c;
     for ( c = position - 1 ; c < numbersLeft - 1 ; c++ ) {
@@ -47,8 +47,11 @@ void copyBoard(cell source_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell new_board[NU
 	int i,j;
 	for (i=0; i < NUM_OF_ROWS; i++) {
 		for (j=0; j < NUM_OF_COLUMNS; j++) {
-			new_board[i][j].number = source_board[i][j].number;
-			new_board[i][j].isFixed = source_board[i][j].isFixed;
+			/*printf("I: %d, J: %d\n", i, j);*/
+			
+				new_board[i][j].number = source_board[i][j].number;
+				new_board[i][j].isFixed = source_board[i][j].isFixed;
+			
 		}
 	}
 }

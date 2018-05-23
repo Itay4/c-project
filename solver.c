@@ -31,16 +31,14 @@ bool isValid(int number, cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int c
     return true;
 }
 
-bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column, bool random) {
+bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column) {
     /*
-     * Recursive backtrack to generate and solve sudoku board
+     * Recursive backtrack to solve sudoku board
      */
-	
-    int nextNum;
+    int nextNum, i, j;
     int randomIndex;
-    int availableNumbers[] = {1, 2, 3, 4, 5, 6, 7, 8, 9}; 
-    int numbersLeft = 9;
-
+    int availableNumbers[9]; 
+    j = 0;
     if (row == 9) {
         return true;
     }
@@ -48,31 +46,35 @@ bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int co
     /* If cell number is already set, no need to change and recruse to next cell */
     if (board[row][column].number) {
         if (column == 8) {
-            if (recursiveBacktrack(board, row+1, 0, random)) return true;
+            if (recursiveBacktrack(board, row+1, 0)) return true;
         } else {
-            if (recursiveBacktrack(board, row, column+1, random)) return true;
+            if (recursiveBacktrack(board, row, column+1)) return true;
         }
         return false;
     }
-    while (numbersLeft > 0) {
-    	if (random){ 		/* Randomized backtracking */
-			randomIndex = rand() % numbersLeft;
-			nextNum = availableNumbers[randomIndex];
-    	} else{    		/* Deterministic backtracking */
-    		nextNum = availableNumbers[0];
-    	}
-        numbersLeft--;
-        if(isValid(nextNum, board, row, column)) {
-            board[row][column].number = nextNum;
-            delFromArr(randomIndex, numbersLeft, availableNumbers);
-            if (column == 8) {
-                if (recursiveBacktrack(board, row + 1, 0, random)) return true;
-            } else {
-                if (recursiveBacktrack(board, row, column + 1, random)) return true;
-            }
-            /* Failed to find a valid value */
-            board[row][column].number = 0;
+    for (i = 1; i < 10; i++){
+        if (isValid(i, board, row, column)) {
+            availableNumbers[j] = i;
+            j++;}
+    }
+    while (j > 0) { 
+        if (j==1) { /* Only a single legal value remains.  */
+            nextNum = availableNumbers[0];
+        } else {
+    	    randomIndex = rand() % j;
+    	    nextNum = availableNumbers[randomIndex];
         }
+        board[row][column].number = nextNum; 
+        delFromArr(randomIndex + 1, j, availableNumbers);   
+        j--;
+        if (column == 8) {
+            if (recursiveBacktrack(board, row + 1, 0)) return true;
+        } else {
+            if (recursiveBacktrack(board, row, column + 1)) return true;
+        }
+        /* Failed to find a valid value */
+        board[row][column].number = 0;
+        
 	}
     return false;
 }
@@ -101,6 +103,9 @@ bool isSafe(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int number, int row, int co
     return true;
 }
 bool deterministicBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
+    /*
+     * Deterministic backtrack to check if sudoku board is valid
+     */
     bool flag = false;
     int i, j, row, column;
     for(i = 0; i < 9; i++) {
@@ -141,8 +146,8 @@ void setFixedCells(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells) {
         while (true) {
             randX = rand() % NUM_OF_ROWS;
             randY = rand() % NUM_OF_COLUMNS;
-            if (board[randX][randY].isFixed != true){
-                board[randX][randY].isFixed = true;
+            if (board[randY][randX].isFixed != true){
+                board[randY][randX].isFixed = true;
                 break;
             }
         }
@@ -155,8 +160,9 @@ void generateSolvedBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells
      * Generates solved sudoku game board
      */
 
-    recursiveBacktrack(board, 0, 0, true);
+    recursiveBacktrack(board, 0, 0);
     setFixedCells(board, fixedCells);
+    
 }
 
 void generateUserBoard(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {

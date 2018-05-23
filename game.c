@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #include "main_aux.h"
 #include "parser.h"
 #include "game.h"
 #include "solver.h"
-#include <time.h>
 
 void initializeBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
 	/*
@@ -42,6 +42,7 @@ void printBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
 			if (j == 3 || j == 6) {
 				printf("| ");
 			}
+			
 			if (board[i][j].isFixed) {
 				printf(".");
 				printf("%d", board[i][j].number);
@@ -65,9 +66,6 @@ void executeCommand(char *parsedCommand[4], cell user_board[NUM_OF_ROWS][NUM_OF_
 	 * Evaluates game command (SET/HINT/VALIDATE/RESTART/EXIT) and calls the relavent function to execute it
 	 */
 
-	if (false) { /* DUMMY USE OF BOARD FOR COMPLIATION - REMOVE AFTER IMPLEMENTING COMMANDS */
-		printf("%d", user_board[0][0].number);
-	}
 
 	if (strcmp(parsedCommand[0], "set") == 0) {
 		set(user_board, atoi(parsedCommand[1]),atoi(parsedCommand[2]), atoi(parsedCommand[3]));
@@ -216,19 +214,25 @@ void restart(int seed){
 		if (error != 1){
 			memoryError("main"); /* NEEDS TO BE CHECKED */
 		}
-		getchar(); /*Required cause of scanf-printf-fgets issue*/
+		/*getchar(); Required cause of scanf-printf-fgets issue*/
 		if (inputValid(fixedCells)){
 			break;
 		} else {
 			printf("Error: Invalid number of cells to fill (should be between 0 and 80)\n");
 		}
 	}
-	srand(seed); /* NEEDS TO BE CHANGED WITH SEED */
+
+	srand(seed); 
+
 	generateSolvedBoard(solved_board, fixedCells);
 	generateUserBoard(solved_board, user_board);
+	while((getchar())!='\n');
 	while (fgets(command, MAX_CMD_SIZE, stdin) != NULL) {
+
 		parseCommand(command, parsedCommand);
+		
 		executeCommand(parsedCommand, user_board, solved_board, command);
+
 	}
 	if (feof(stdin)) { /* EOF */
 		exitGame(command);
