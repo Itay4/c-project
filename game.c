@@ -198,14 +198,14 @@ void hint(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], int column, int row){
 		printf("Hint: set cell to %d\n", hint);
 }
 
-void restart(int seed){
+void restart(){
 	/*
 	 * Restarting the game
 	 */
 	cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS];
 	cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS];
 	int fixedCells, error;
-	char* command = malloc(MAX_CMD_SIZE);
+	char* command = malloc(MAX_CMD_SIZE + 1);
 	char *parsedCommand[4];
 	gameOverFlag = false;
 	setvbuf(stdout,NULL,_IONBF,0);
@@ -224,7 +224,7 @@ void restart(int seed){
 			printf("Error: invalid number of cells to fill (should be between 0 and 80)\n");
 		}
 	}
-	srand(seed); 
+	
 	generateSolvedBoard(solved_board, fixedCells);
 	generateUserBoard(solved_board, user_board);
 	while((getchar())!='\n');

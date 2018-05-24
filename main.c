@@ -7,7 +7,8 @@
 #include <time.h>
 
 int main(int argc, char *argv[]) {
-	restart(atoi(argv[1]));
+	srand(atoi(argv[1])); 
+	restart();
 	return argc;
 }
 
