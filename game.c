@@ -63,14 +63,13 @@ void printBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
 	printSeperator();
 }
 
-void executeCommand(char *parsedCommand[4], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS],cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], char* command){
+void executeCommand(char *parsedCommand[4], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS],cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], char* command, int counter){
 	/*
 	 * Evaluates game command (SET/HINT/VALIDATE/RESTART/EXIT) and calls the relavent function to execute it
 	 */
-
-	if (strcmp(parsedCommand[0], "set") == 0 && !gameOverFlag) {
+	if (strcmp(parsedCommand[0], "set") == 0 && !gameOverFlag && counter == 4) {
 		set(user_board, atoi(parsedCommand[1]),atoi(parsedCommand[2]), atoi(parsedCommand[3]));
-	} else if (strcmp(parsedCommand[0], "hint") == 0 && !gameOverFlag) {
+	} else if (strcmp(parsedCommand[0], "hint") == 0 && !gameOverFlag && counter == 3) {
 		hint(solved_board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
 	} else if (strcmp(parsedCommand[0], "validate") == 0  && !gameOverFlag) {
 		validate(user_board, solved_board);
@@ -81,6 +80,7 @@ void executeCommand(char *parsedCommand[4], cell user_board[NUM_OF_ROWS][NUM_OF_
 	} else { /* Invalid command */
 		printf("Error: invalid command\n");
 	}
+
 }
 
 bool valInBlock(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int  column, int row, int val){
@@ -207,6 +207,7 @@ void restart(){
 	int fixedCells, error;
 	char* command = malloc(MAX_CMD_SIZE + 1);
 	char *parsedCommand[4];
+	int counter;
 	gameOverFlag = false;
 	setvbuf(stdout,NULL,_IONBF,0);
 	initializeBoard(solved_board);
@@ -229,8 +230,8 @@ void restart(){
 	generateUserBoard(solved_board, user_board);
 	while((getchar())!='\n');
 	while (fgets(command, MAX_CMD_SIZE, stdin) != NULL) {
-		parseCommand(command, parsedCommand);
-		executeCommand(parsedCommand, user_board, solved_board, command);
+		counter = parseCommand(command, parsedCommand);
+		executeCommand(parsedCommand, user_board, solved_board, command, counter);
 	}
 	if (feof(stdin)) { /* EOF */
 		exitGame(command);

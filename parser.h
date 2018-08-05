@@ -3,6 +3,6 @@
 
 #include <string.h>
 
-void parseCommand(char* command, char* parsedCommand[]);
+int parseCommand(char* command, char* parsedCommand[]);
 
 #endif /* PARSER_H_ */

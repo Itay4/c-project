@@ -79,32 +79,6 @@ bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int co
     return false;
 }
 
-bool isSafe(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int number, int row, int column) {
-    /*
-     * Check if safe to insert number in row and column in board according to sudoku game rules
-     */
-    int i, j, r, c;
-    for(i = 0; i < 9; i++) {
-        if(board[row][i].number == number) {
-            return false;
-        }
-    }
-    for(i = 0; i < 9; i++) {
-        if(board[i][column].number == number) {
-            return false;
-        }
-    }
-    r = row - row % 3;
-    c = column - column % 3;
-    for(i = 0; i < 3; i++) {
-        for(j = 0; j < 3; j++) {
-            if(board[r + i][c + j].number == number) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
 bool deterministicBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
     /*
      * Deterministic backtrack to check if sudoku board is valid
@@ -128,7 +102,7 @@ bool deterministicBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
         return true;
     } else {
         for(i = 1; i <= 9; i++) {
-            if(isSafe(board, i, row, column)) {
+            if(validCheck(board, column, row, i)) {
                 board[row][column].number = i;
                 if(deterministicBacktrack(board)) {
                     return true;

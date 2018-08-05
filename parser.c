@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void parseCommand(char* command, char* parsedCommand[]) {
+int parseCommand(char* command, char* parsedCommand[]) {
 	/*
 	 * Parses string by white spaces and assigns result to an array
 	 */
@@ -16,6 +16,7 @@ void parseCommand(char* command, char* parsedCommand[]) {
 		i++;
 		token = strtok(NULL, delimiter);
 	}
+	return i;
 }
 
 
