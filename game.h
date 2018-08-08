@@ -3,26 +3,34 @@
 
 void initializeBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]);
 
-void printBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]);
+void printBoard(cell **board, int rows, int cols, int markErrors);
 
-void executeCommand(char *parsedCommand[4], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS],cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], char* command, int counter);
+void executeCommand(char *parsedCommand[4], cell **board, char* command, int counter, char mode, size_t *rows, size_t *cols, int *markErrors);
 
-void gameOver(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]);
+void gameOver(cell **board);
 
-bool valInColumn(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int column, int val);
+bool valInColumn(cell **board, int column, int val, int numOfRows);
 
-bool valInRow(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int val);
+bool valInRow(cell **board, int row, int val, int NumOfCols);
 
-bool valInBlock(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int  column, int row, int val);
+bool valInBlock(cell **board, int column, int row, int val, int numOfRows, int NumOfCols);
 
-bool validCheck(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int column, int row, int val);
+bool validCheck(cell **board, int column, int row, int val, int numOfRows, int numOfCols);
 
-void set(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int column, int row, int val);
+void set(cell **board, int column, int row, int val, int numOfRows, int numOfCols);
 
-void validate(cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS]);
+void validate(cell **board, size_t *rows, size_t *cols);
 
-void hint(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], int column, int row);
+void hint(cell **board, int column, int row);
 
-void restart();
+cell **solveCommand(char* parsedCommand[4], size_t *rows, size_t *cols, int *markErrors);
+
+cell **editCommand(char* parsedCommand[4], size_t *rows, size_t *cols);
+
+void markErrorsCommand(char* value, int *markErrors);
+
+void saveCommand(cell **board, int rows, int cols, char *filePath);
+
+void autoFill(cell **board, int rows, int cols, int markErrors);
 
 #endif /* GAME_H_ */
