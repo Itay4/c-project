@@ -33,4 +33,10 @@ void saveCommand(cell **board, int rows, int cols, char *filePath);
 
 void autoFill(cell **board, int rows, int cols, int markErrors);
 
+void numSolutions(cell **board, int numOfRows, int numOfCols);
+
+int countSolutions(cell **board, int numOfRows, int numOfCols);
+
+int countSolutionsRec(cell **board, int i, int j, int counter, int numOfRows, int numOfCols);
+
 #endif /* GAME_H_ */

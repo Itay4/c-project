@@ -1,6 +1,7 @@
 #include "main_aux.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
 bool inputValid(int num) {
 	/*
@@ -54,4 +55,14 @@ void copyBoard(cell source_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell new_board[NU
 			
 		}
 	}
+}
+
+bool isInteger(char *s){
+	char * t;
+    for (t = s; *t != '\0'; t++) {
+    	if (*t == '.' || isalpha(*t)) {
+    		return false;
+    	}
+    }
+	return true;
 }

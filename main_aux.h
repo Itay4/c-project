@@ -20,6 +20,7 @@ typedef int bool;
 typedef struct  {
 	int number;
 	bool isFixed;
+	bool asterisk;
 } cell;
 
 bool inputValid(int num);
@@ -31,6 +32,8 @@ void exitGame(char* command);
 void memoryError(char* func);
 
 void copyBoard(cell source_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell new_board[NUM_OF_ROWS][NUM_OF_COLUMNS]);
+
+bool isInteger(char *s);
 
 #endif /* MAIN_AUX_H_ */
 

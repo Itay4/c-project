@@ -5,10 +5,40 @@
 #include <time.h>
 #include "main_aux.h"
 #include "parser.h"
-#include "game.h"
 #include "solver.h"
+#include "game.h"
+#include "stack.h"
+
+#define UNUSED(x) (void)(x) /*REMOVE*/
 
 bool gameOverFlag;
+
+void executeCommand(char *parsedCommand[4], cell **board, char* command, int counter, char mode, size_t *rows, size_t *cols, int *markErrors){
+	/*
+	 * Evaluates game command (SET/HINT/VALIDATE/RESTART/EXIT) and calls the relavent function to execute it
+	 */
+	if (strcmp(parsedCommand[0], "set") == 0 && !gameOverFlag && counter == 4 && (mode == 'E' || mode == 'S')) {
+		set(board, atoi(parsedCommand[1]),atoi(parsedCommand[2]), atoi(parsedCommand[3]), *rows, *cols);
+	} else if (strcmp(parsedCommand[0], "hint") == 0 && !gameOverFlag && counter == 3 && mode == 'S') {
+		hint(board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
+	} else if (strcmp(parsedCommand[0], "validate") == 0  && !gameOverFlag && (mode == 'E' || mode == 'S')) {
+		validate(board, rows, cols);
+	} else if (strcmp(parsedCommand[0], "print_board") == 0 && (mode == 'E' || mode == 'S')) {
+		printBoard(board, *rows, *cols, *markErrors);
+	} else if (strcmp(parsedCommand[0], "mark_errors") == 0 && mode == 'S') {
+		markErrorsCommand(parsedCommand[1], markErrors);
+	} else if (strcmp(parsedCommand[0], "autofill") == 0 && mode == 'S') {
+		autoFill(board, *rows, *cols, *markErrors);
+	} else if (strcmp(parsedCommand[0], "save") == 0 && (mode == 'E' || mode == 'S')) {
+		saveCommand(board, *rows, *cols, parsedCommand[1]);
+	} else if (strcmp(parsedCommand[0], "num_solutions") == 0 && (mode == 'E' || mode == 'S')) {
+		numSolutions(board, *rows, *cols);
+	} else if (strcmp(parsedCommand[0], "exit") == 0) {
+		exitGame(command);
+	} else { /* Invalid command */
+		printf("ERROR: invalid command\n");
+	}
+}
 
 void initializeBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
 	/*
@@ -71,29 +101,139 @@ void printBoard(cell **board, int rows, int cols, int markErrors) {
 	printSeperator(N, rows);
 }
 
-void executeCommand(char *parsedCommand[4], cell **board, char* command, int counter, char mode, size_t *rows, size_t *cols, int *markErrors){
-	/*
-	 * Evaluates game command (SET/HINT/VALIDATE/RESTART/EXIT) and calls the relavent function to execute it
-	 */
-	if (strcmp(parsedCommand[0], "set") == 0 && !gameOverFlag && counter == 4 && (mode == 'E' || mode == 'S')) {
-		set(board, atoi(parsedCommand[1]),atoi(parsedCommand[2]), atoi(parsedCommand[3]), *rows, *cols);
-	} else if (strcmp(parsedCommand[0], "hint") == 0 && !gameOverFlag && counter == 3 && mode == 'S') {
-		hint(board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
-	} else if (strcmp(parsedCommand[0], "validate") == 0  && !gameOverFlag && (mode == 'E' || mode == 'S')) {
-		validate(board, rows, cols);
-	} else if (strcmp(parsedCommand[0], "print_board") == 0 && (mode == 'E' || mode == 'S')) {
-		printBoard(board, *rows, *cols, *markErrors);
-	} else if (strcmp(parsedCommand[0], "mark_errors") == 0 && mode == 'S') {
-		markErrorsCommand(parsedCommand[1], markErrors);
-	} else if (strcmp(parsedCommand[0], "autofill") == 0 && mode == 'S') {
-		autoFill(board, *rows, *cols, *markErrors);
-	} else if (strcmp(parsedCommand[0], "save") == 0 && (mode == 'E' || mode == 'S')) {
-		saveCommand(board, *rows, *cols, parsedCommand[1]);
-	} else if (strcmp(parsedCommand[0], "exit") == 0) {
-		exitGame(command);
-	} else { /* Invalid command */
-		printf("ERROR: invalid command\n");
+void numSolutions(cell **board, int numOfRows, int numOfCols) {
+	int solutionsCounter = countSolutions(board, numOfRows, numOfCols);
+	/*int solutionsCounter = countSolutionsRec(board, 0, 0, 0, *rows, *cols);*/
+	printf("Number of solutions: %d\n", solutionsCounter);
+	if (solutionsCounter == 1) {
+		printf("This is a good board!\n");
+	} else {
+		printf("The puzzle has more than 1 solution, try to edit it further\n");
 	}
+}
+
+int countSolutionsRec(cell **board, int i, int j, int counter, int numOfRows, int numOfCols) {
+	/*
+	 * Stack implementation
+	 */
+	int N = numOfRows*numOfCols;
+	int k;
+	if (i == N) {
+		i = 0;
+		if (++j == N){
+			return 1+counter;
+		}
+	}
+	if (board[i][j].number != 0){
+		return countSolutionsRec(board, i+1, j, counter, numOfRows, numOfCols);
+	}
+	for (k = 1; k <= N; ++k) {
+		if (validCheck(board, j, i, k, numOfRows, numOfCols)){
+			board[i][j].number = k;
+			counter = countSolutionsRec(board, i+1, j, counter, numOfRows, numOfCols);
+		}
+	}
+	board[i][j].number = 0;
+	return counter;
+}
+
+int countSolutions(cell **board, int numOfRows, int numOfCols) {
+	/*
+	Stack implementation
+	TODO:
+		Check if board is erroneous
+	*/
+
+    int N = numOfRows * numOfCols;
+
+    int returnValue, value;
+
+    SnapShotStruct newSnapshot;
+
+    StackNode* snapshotStack;
+
+    SnapShotStruct currentSnapshot;
+    currentSnapshot.i = 0;
+    currentSnapshot.j = 0;
+    currentSnapshot.counter = 0;
+    currentSnapshot.stage = 0;
+
+    push(&snapshotStack, currentSnapshot);
+
+    while (!empty(snapshotStack)) {
+       currentSnapshot=top(snapshotStack);
+       pop(&snapshotStack);
+       if (currentSnapshot.i == N){
+        	currentSnapshot.i = 0;
+        	if (++currentSnapshot.j == N) {
+        		returnValue = currentSnapshot.counter + 1;
+        		continue;
+        	}    
+        }
+        if (board[currentSnapshot.i][currentSnapshot.j].number != 0) {
+        	newSnapshot.i = currentSnapshot.i + 1;
+        	newSnapshot.j = currentSnapshot.j;
+        	newSnapshot.counter = currentSnapshot.counter;
+        	newSnapshot.stage = 0;
+			push(&snapshotStack, newSnapshot);
+			continue;
+		}
+		for (value = 1; value <= N; ++value) {
+			if (validCheck(board, currentSnapshot.j, currentSnapshot.i, value, numOfRows, numOfCols)){
+				board[currentSnapshot.i][currentSnapshot.j].number = value;
+	        	newSnapshot.i = currentSnapshot.i + 1;
+	        	newSnapshot.j = currentSnapshot.j;
+	        	newSnapshot.counter = currentSnapshot.counter;
+	        	newSnapshot.stage = 0;
+				push(&snapshotStack, newSnapshot);
+				continue;
+			}
+		}
+		board[currentSnapshot.i][currentSnapshot.j].number = 0;
+       /*switch (currentSnapshot.stage)
+       {
+       case 0:
+	    	if (currentSnapshot.i == N){
+	        	currentSnapshot.i = 0;
+	        	if (++currentSnapshot.j == N) {
+	        		returnValue = 1 + currentSnapshot.counter;
+	        		continue;
+	        	}    
+	        }
+	        if (board[currentSnapshot.i][currentSnapshot.j].number != 0) {
+	        	newSnapshot.i = currentSnapshot.i + 1;
+	        	newSnapshot.j = currentSnapshot.j;
+	        	newSnapshot.counter = currentSnapshot.counter;
+	        	newSnapshot.stage = 0;
+				push(&snapshotStack, newSnapshot);
+				continue;
+			}
+			for (value = 1; value <= N; ++value) {
+				if (validCheck(board, currentSnapshot.j, currentSnapshot.i, value, numOfRows, numOfCols)){
+					board[currentSnapshot.i][currentSnapshot.j].number = value;
+		        	newSnapshot.i = currentSnapshot.i + 1;
+		        	newSnapshot.j = currentSnapshot.j;
+		        	newSnapshot.counter = currentSnapshot.counter;
+		        	newSnapshot.stage = 0;
+					push(&snapshotStack, newSnapshot);
+					continue;
+				}
+			}
+			currentSnapshot.stage = 1;
+			push(&snapshotStack, currentSnapshot);
+
+	        break; 
+       case 1:
+			newSnapshot.i = currentSnapshot.i + 1;
+			newSnapshot.j = currentSnapshot.j;
+			newSnapshot.counter = returnValue;
+			newSnapshot.stage = 0;
+			push(&snapshotStack, newSnapshot);
+			continue;
+			break;
+       }*/
+    }
+    return returnValue;
 }
 
 void saveCommand(cell **board, int rows, int cols, char *filePath) {

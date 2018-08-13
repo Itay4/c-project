@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include "main_aux.h"
 #include "game.h"
+#include "gurobi_c.h"
+#include <string.h>
+#define UNUSED(x) (void)(x)
 
 bool isValid(int number, cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column) {
     /*
@@ -79,7 +82,7 @@ bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int co
     return false;
 }
 
-bool deterministicBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
+bool deterministicBacktrack(cell **board) {
     /*
      * Deterministic backtrack to check if sudoku board is valid
      */
@@ -140,10 +143,10 @@ void generateSolvedBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells
     setFixedCells(board, fixedCells);
 }
 
-void generateUserBoard(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
-    /*
+/*void generateUserBoard(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
+    
      * Generates unsolved user sudoku game board
-     */
+     
 	int i,j;
 	for (i=0; i < NUM_OF_ROWS; i++) {
 		for (j=0; j < NUM_OF_COLUMNS; j++) {
@@ -158,5 +161,196 @@ void generateUserBoard(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell user
 		}
 	}
 	printBoard(user_board);
+}*/
+
+void ILP(cell **board, int rows, int cols) {
+
+	GRBenv   *env   = NULL;
+ 	GRBmodel *model = NULL;
+ 	int       DIM = rows * cols;
+  int      *ind = malloc(DIM * sizeof *ind);
+ 	double   *val = malloc(DIM * sizeof *val);
+ 	double   *lb = malloc(DIM*DIM*DIM * sizeof *lb);
+	char     *vtype = malloc(DIM*DIM*DIM * sizeof *vtype);
+	char     **names = malloc(DIM*DIM*DIM * sizeof *names);
+	char     *namestorage = malloc(10*DIM*DIM*DIM * sizeof *namestorage);
+  char     *cursor;
+  int       optimstatus;
+  double    objval;
+  int       i, j, v, ig, jg, count;
+  int       error = 0; 
+
+    /* Create an empty model */
+  cursor = namestorage;
+  for (i = 0; i < DIM; i++) {
+    for (j = 0; j < DIM; j++) {
+      for (v = 0; v < DIM; v++) {
+        if (board[i][j].number == v)
+          lb[i*DIM*DIM+j*DIM+v] = 1;
+        else
+          lb[i*DIM*DIM+j*DIM+v] = 0;
+        vtype[i*DIM*DIM+j*DIM+v] = GRB_BINARY;
+
+        names[i*DIM*DIM+j*DIM+v] = cursor;
+        cursor += strlen(names[i*DIM*DIM+j*DIM+v]) + 1;
+      }
+    }
+  }
+
+  /* Create environment */
+
+  error = GRBloadenv(&env, "sudoku.log");
+  if (error) {
+    printf("ERROR %d GRBloadenv(): %s\n", error, GRBgeterrormsg(env));
+    return;
+  }
+
+  /* Create new model */
+
+error = GRBnewmodel(env, &model, "sudoku", DIM*DIM*DIM, NULL, lb, NULL,
+                    vtype, names);
+if (error) {
+    printf("ERROR %d GRBnewmodel(): %s\n", error, GRBgeterrormsg(env));
+    return;
+  }
+
+  /* Each cell gets a value */
+
+  for (i = 0; i < DIM; i++) {
+    for (j = 0; j < DIM; j++) {
+      for (v = 0; v < DIM; v++) {
+          ind[v] = i*DIM*DIM + j*DIM + v;
+          val[v] = 1.0;
+        }
+        error = GRBaddconstr(model, DIM, ind, val, GRB_EQUAL, 1.0, NULL);
+        if (error) goto QUIT;
+    }
+  }
+
+   /* Each value must appear once in each row */
+
+  for (v = 0; v < DIM; v++) {
+    for (j = 0; j < DIM; j++) {
+      for (i = 0; i < DIM; i++) {
+        ind[i] = i*DIM*DIM + j*DIM + v;
+        val[i] = 1.0;
+      }
+
+      error = GRBaddconstr(model, DIM, ind, val, GRB_EQUAL, 1.0, NULL);
+      if (error) goto QUIT;
+    }
+  }
+
+  /* Each value must appear once in each column */
+
+  for (v = 0; v < DIM; v++) {
+    for (i = 0; i < DIM; i++) {
+      for (j = 0; j < DIM; j++) {
+        ind[j] = i*DIM*DIM + j*DIM + v;
+        val[j] = 1.0;
+      }
+
+      error = GRBaddconstr(model, DIM, ind, val, GRB_EQUAL, 1.0, NULL);
+      if (error) goto QUIT;
+    }
+  }
+
+    /* Each value must appear once in each subgrid */
+
+  for (v = 0; v < DIM; v++) {
+    for (ig = 0; ig < cols; ig++) {
+      for (jg = 0; jg < rows; jg++) {
+        count = 0;
+        for (i = ig*cols; i < (ig+1)*cols; i++) {
+          for (j = jg*rows; j < (jg+1)*rows; j++) {
+            ind[count] = i*DIM*DIM + j*DIM + v;
+            val[count] = 1.0;
+            count++;
+          }
+        }
+
+        error = GRBaddconstr(model, DIM, ind, val, GRB_EQUAL, 1.0, NULL);
+        if (error) goto QUIT;
+      }
+    }
+  }
+
+
+    /* Optimize model */
+
+  error = GRBoptimize(model);
+  if (error) goto QUIT;
+
+  /* Write model to 'sudoku.lp' */
+
+  error = GRBwrite(model, "sudoku.lp");
+  if (error) goto QUIT;
+
+  /* Capture solution information */
+
+  error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
+  if (error) goto QUIT;
+  
+  error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
+  if (error) goto QUIT;
+printf("here\n");
+  printf("\nOptimization complete\n");
+  if (optimstatus == GRB_OPTIMAL)
+    printf("Optimal objective: %.4e\n", objval);
+  else if (optimstatus == GRB_INF_OR_UNBD)
+    printf("Model is infeasible or unbounded\n");
+  else
+    printf("Optimization was stopped early\n");
+  printf("\n");
+
+  QUIT:
+
+  /* Error reporting */
+
+  if (error) {
+    printf("ERROR: %s\n", GRBgeterrormsg(env));
+    exit(1);
+  }
+
+
+/* Free model */
+
+  GRBfreemodel(model);
+
+  /* Free environment */
+
+  GRBfreeenv(env);
+
+
+
+    
+
+
+
+  UNUSED(board);
+  UNUSED(rows);
+  UNUSED(cols);
+  UNUSED(env);
+  UNUSED(model);
+  UNUSED(DIM);
+  UNUSED(ind);
+  UNUSED(val);
+  UNUSED(lb);
+  UNUSED(vtype);
+  UNUSED(names);
+  UNUSED(namestorage);
+  UNUSED(cursor);
+  UNUSED(optimstatus);
+  UNUSED(objval);
+  UNUSED(optimstatus);
+  UNUSED(i);
+  UNUSED(j);
+  UNUSED(v);
+  UNUSED(ig);
+  UNUSED(jg);
+  UNUSED(count);
+  UNUSED(error);
+
+
 }
 
