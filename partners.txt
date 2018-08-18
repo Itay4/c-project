@@ -1,7 +1,0 @@
-Full Name 1: Rotem Bar
-Id No 1: 200954758
-User Name 1: rotembar
-Full Name 2: Itay Keren	
-Id No 2: 203085394	
-User Name 2: itaykeren
-Assignment No: 3
