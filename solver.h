@@ -13,4 +13,4 @@ void generateSolvedBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells
 void generateUserBoard(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS]);
 void ILP(cell **board, int rows, int cols);
 
-#endif //NEW_SUDUKO_SOLVER_H
+#endif /*NEW_SUDUKO_SOLVER_H*/
