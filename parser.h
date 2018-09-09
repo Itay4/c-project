@@ -8,4 +8,4 @@
 int parseCommand(char* command, char* parsedCommand[]);
 
 
-#endif //NEW_SUDUKO_PARSER_H
+#endif /*NEW_SUDUKO_PARSER_H*/
