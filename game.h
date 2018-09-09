@@ -44,4 +44,4 @@ int countSolutions(cell **board, int numOfRows, int numOfCols);
 
 int countSolutionsRec(cell **board, int i, int j, int counter, int numOfRows, int numOfCols);
 
-#endif //NEW_SUDUKO_GAME_H
+#endif /*NEW_SUDUKO_GAME_H*/
