@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
-project(NEW_SUDUKO C)
+project(Sudoku90 C)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 90)
 
-add_executable(NEW_SUDUKO main.c main_aux.h main_aux.c game.c game.h solver.c solver.h parser.c parser.h stack.c stack.h linked_list.h linked_list.c)
+add_executable(Sudoku90 main.c main_aux.c main_aux.h game.c game.h solver.c solver.h parser.c parser.h linked_list.c linked_list.h stack.c stack.h)
