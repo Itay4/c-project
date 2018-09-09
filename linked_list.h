@@ -34,5 +34,5 @@ void DeleteNextNodes(node* new_tail, list *lst);
 void DeleteList(list * lst);
 void Redo(list * lst, cell **board, size_t *rows, size_t *cols, int markErrors);
 void Undo(list * lst, cell **board, size_t *rows, size_t *cols, int markErrors);
-#endif //NEW_SUDUKO_LINKED_LIST_H
+#endif /*NEW_SUDUKO_LINKED_LIST_H*/
 
