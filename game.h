@@ -1,11 +1,16 @@
-#ifndef GAME_H_
-#define GAME_H_
+
+#ifndef NEW_SUDUKO_GAME_H
+#define NEW_SUDUKO_GAME_H
+
+#include "linked_list.h"
+
+cell **generateEmptyBoard(size_t *rows, size_t *cols);
 
 void initializeBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]);
 
 void printBoard(cell **board, int rows, int cols, int markErrors);
 
-void executeCommand(char *parsedCommand[4], cell **board, char* command, int counter, char mode, size_t *rows, size_t *cols, int *markErrors);
+void executeCommand(char *parsedCommand[4], cell **board, char* command, int counter, char mode, size_t *rows, size_t *cols, int *markErrors,list *lst);
 
 void gameOver(cell **board);
 
@@ -17,7 +22,7 @@ bool valInBlock(cell **board, int column, int row, int val, int numOfRows, int N
 
 bool validCheck(cell **board, int column, int row, int val, int numOfRows, int numOfCols);
 
-void set(cell **board, int column, int row, int val, int numOfRows, int numOfCols);
+int set(cell **board, int column, int row, int val, int numOfRows, int numOfCols);
 
 void validate(cell **board, size_t *rows, size_t *cols);
 
@@ -39,4 +44,4 @@ int countSolutions(cell **board, int numOfRows, int numOfCols);
 
 int countSolutionsRec(cell **board, int i, int j, int counter, int numOfRows, int numOfCols);
 
-#endif /* GAME_H_ */
+#endif //NEW_SUDUKO_GAME_H

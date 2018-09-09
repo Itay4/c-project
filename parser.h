@@ -1,8 +1,11 @@
-#ifndef PARSER_H_
-#define PARSER_H_
+
+
+#ifndef NEW_SUDUKO_PARSER_H
+#define NEW_SUDUKO_PARSER_H
 
 #include <string.h>
 
 int parseCommand(char* command, char* parsedCommand[]);
 
-#endif /* PARSER_H_ */
+
+#endif //NEW_SUDUKO_PARSER_H
