@@ -45,8 +45,6 @@ int main() {
             new_data.row_index,new_data.col_index,new_data.col_index= 0;
             board = NULL;
             moves_list = NULL;
-            DeleteList(moves_list);
-
             board = editCommand(parsedCommand, &rows, &cols);
             mode = 'E';
         } else {
