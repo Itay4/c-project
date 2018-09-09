@@ -136,3 +136,4 @@ void generateSolvedBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells
 
 
 
+

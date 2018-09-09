@@ -1,9 +1,7 @@
-//
-// Created by Rotem on 08/09/2018.
-//
 
-#ifndef NEW_SUDUKO_LINKED_LIST_H
-#define NEW_SUDUKO_LINKED_LIST_H
+#ifndef SUDOKU90_LINKED_LIST_H
+#define SUDOKU90_LINKED_LIST_H
+
 
 #include "main_aux.h"
 
@@ -32,7 +30,7 @@ list* CreateList(data x);
 void InsertAtTail(data d, list *lst);
 void DeleteNextNodes(node* new_tail, list *lst);
 void DeleteList(list * lst);
-void Redo(list * lst, cell **board, size_t *rows, size_t *cols, int markErrors);
-void Undo(list * lst, cell **board, size_t *rows, size_t *cols, int markErrors);
-#endif /*NEW_SUDUKO_LINKED_LIST_H*/
+void Redo(list * lst, cell **board);
+void Undo(list * lst, cell **board);
 
+#endif /*SUDOKU90_LINKED_LIST_H*/

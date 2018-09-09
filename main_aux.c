@@ -42,12 +42,11 @@ void memoryError(char* func){
     exit(0);
 }
 
-void copyBoard(cell **source_board, cell **new_board,size_t rows, size_t cols){
+void copyBoard(cell **source_board, cell **new_board){
     /*
      * Copying source sudoku board to new sudoku board.
      */
     int i,j;
-
     int N = rows * cols;
 
     for (i=0; i < N; i++) {

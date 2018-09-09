@@ -1,8 +1,8 @@
 
-#ifndef NEW_SUDUKO_MAIN_AUX_H
-#define NEW_SUDUKO_MAIN_AUX_H
+#ifndef SUDOKU90_MAIN_AUX_H
+#define SUDOKU90_MAIN_AUX_H
+
 #include <ctype.h>
-#include <stddef.h>
 typedef int bool;
 #define true 1
 #define false 0
@@ -10,7 +10,9 @@ typedef int bool;
 #define NUM_OF_COLUMNS 9
 /* Constants */
 #define MAX_CMD_SIZE 1024 /*check if not 256. size of char is 1*/
-
+extern int rows;
+extern int cols;
+extern int mark_errors;
 #define BLOCK_SIZE 3
 #define UNASSIGNED 0
 #define FIXED_ERROR "Error: cell is fixed\n"
@@ -33,8 +35,8 @@ void exitGame(char* command);
 
 void memoryError(char* func);
 
-void copyBoard(cell **source_board, cell **new_board,size_t rows, size_t cols);
+void copyBoard(cell **source_board, cell **new_board);
 
 bool isInteger(char *s);
 
-#endif /*NEW_SUDUKO_MAIN_AUX_H*/
+#endif /*SUDOKU90_MAIN_AUX_H*/

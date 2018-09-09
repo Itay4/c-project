@@ -1,6 +1,3 @@
-//
-// Created by Rotem on 08/09/2018.
-//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,19 +76,21 @@ void DeleteList(list * lst){
     lst = NULL;
 }
 
-void Redo(list * lst, cell **board, size_t *rows, size_t *cols, int markErrors){
+void Redo(list * lst, cell **board){
+    node * new_current;
+    int row_index, col_index, new_val, old_val;
     if ((lst->current == lst->tail) || (lst->head->next == NULL)) {
         printf("Error: no moves to redo\n");
         return;
     }
-    node * new_current = lst->current->next;
-    int row_index = new_current->d.row_index;
-    int col_index = new_current->d.col_index;
-    int new_val = new_current->d.value;
-    int old_val = board[row_index - 1][col_index - 1].number;
+    new_current = lst->current->next;
+    row_index = new_current->d.row_index;
+    col_index = new_current->d.col_index;
+    new_val = new_current->d.value;
+    old_val = board[row_index - 1][col_index - 1].number;
     lst->current = new_current;
-    copyBoard(new_current->d.board, board, *rows, *cols);
-    printBoard(board, *rows, *cols, markErrors);
+    copyBoard(new_current->d.board, board);
+    printBoard(board);
     if (old_val == 0){
         printf("Redo %d,%d: from - to %d\n",col_index, row_index,new_val);
     }
@@ -104,20 +103,21 @@ void Redo(list * lst, cell **board, size_t *rows, size_t *cols, int markErrors){
 
 }
 
-void Undo(list * lst, cell **board, size_t *rows, size_t *cols, int markErrors){
-
+void Undo(list * lst, cell **board){
+    node * new_current;
+    int row_index, col_index, old_val, new_val;
     if ((lst->current == lst->head) || (lst->head->next == NULL)){
         printf("Error: no moves to undo\n");
         return;
     }
-    int row_index = lst->current->d.row_index;
-    int col_index = lst->current->d.col_index;
-    int old_val = lst->current->d.value;
-    node * new_current = lst->current->prev;
+    row_index = lst->current->d.row_index;
+    col_index = lst->current->d.col_index;
+    old_val = lst->current->d.value;
+    new_current = lst->current->prev;
     lst->current = new_current;
-    int new_val = lst->current->d.board[row_index - 1][col_index - 1].number;
-    copyBoard(lst->current->d.board, board, *rows, *cols);
-    printBoard(board, *rows, *cols, markErrors);
+    new_val = lst->current->d.board[row_index - 1][col_index - 1].number;
+    copyBoard(lst->current->d.board, board);
+    printBoard(board);
     if (old_val == 0){
         printf("Redo %d,%d: from - to %d\n",col_index, row_index,new_val);
     }

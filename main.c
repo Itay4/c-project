@@ -7,19 +7,21 @@
 #include <time.h>
 #include "linked_list.h"
 
+int rows = 0;
+int cols = 0;
+int mark_errors = 1;
 
 int main() {
 
     char *parsedCommand[4] = {'\0', '\0', '\0', '\0'};
     char *command = malloc(MAX_CMD_SIZE + 1);
-    size_t rows, cols;
     cell **board;
     list *moves_list = NULL;
     data new_data;
     int argsCounter;
     char mode = 'I';
     int i;
-    int markErrors = 1;
+
 
     printf("Sudoku\n------\n");
     printf("Enter your command:\n");
@@ -30,25 +32,30 @@ int main() {
         if (parsedCommand[0] == NULL)  {
             /*Handles blank line*/
         } else if (strcmp(parsedCommand[0], "solve") == 0) {
-            new_data.board = generateEmptyBoard(&rows,&cols);
-            new_data.row_index,new_data.col_index,new_data.col_index= 0;
             board = NULL;
             moves_list = NULL;
-
-            board = solveCommand(parsedCommand, &rows, &cols, &markErrors);
-            copyBoard(board, new_data.board, rows, cols);
+            new_data.row_index = 0;
+            new_data.col_index =0;
+            new_data.col_index = 0;
+            board = solveCommand(parsedCommand);
+            new_data.board = generateEmptyBoard();
+            copyBoard(board, new_data.board);
             moves_list = CreateList(new_data);
             mode = 'S';
 
         } else if (strcmp(parsedCommand[0], "edit") == 0){
-            new_data.board = generateEmptyBoard(&rows,&cols);
-            new_data.row_index,new_data.col_index,new_data.col_index= 0;
             board = NULL;
             moves_list = NULL;
-            board = editCommand(parsedCommand, &rows, &cols);
+            new_data.row_index = 0;
+            new_data.col_index =0;
+            new_data.col_index = 0;
+            board = editCommand(parsedCommand);
+            new_data.board = generateEmptyBoard();
+            copyBoard(board, new_data.board);
+            moves_list = CreateList(new_data);
             mode = 'E';
         } else {
-            executeCommand(parsedCommand, board, command, argsCounter, mode, &rows, &cols, &markErrors, moves_list);
+            executeCommand(parsedCommand, board, command, argsCounter, mode, moves_list);
 
         }
         /*else is redo undo!!!!!!!!!!!! create here linked lst? init in each mode and when del? switching between  modes*/

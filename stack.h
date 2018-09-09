@@ -1,6 +1,7 @@
 
-#ifndef NEW_SUDUKO_STACK_H
-#define NEW_SUDUKO_STACK_H
+
+#ifndef SUDOKU90_STACK_H
+#define SUDOKU90_STACK_H
 
 
 typedef struct SnapShotStruct {
@@ -26,5 +27,4 @@ SnapShotStruct pop(StackNode** root);
 
 SnapShotStruct top(StackNode* root);
 
-
-#endif /*NEW_SUDUKO_STACK_H*/
+#endif /*SUDOKU90_STACK_H*/
