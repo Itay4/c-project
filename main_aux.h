@@ -1,6 +1,3 @@
-//
-// Created by Rotem on 25/08/2018.
-//
 
 #ifndef NEW_SUDUKO_MAIN_AUX_H
 #define NEW_SUDUKO_MAIN_AUX_H
