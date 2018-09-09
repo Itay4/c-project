@@ -27,4 +27,4 @@ SnapShotStruct pop(StackNode** root);
 SnapShotStruct top(StackNode* root);
 
 
-#endif //NEW_SUDUKO_STACK_H
+#endif /*NEW_SUDUKO_STACK_H*/
