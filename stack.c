@@ -1,8 +1,10 @@
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include "stack.h"
- 
+
 StackNode* newNode(SnapShotStruct snapshot)
 {
     StackNode* stackNode = (StackNode*) malloc(sizeof(StackNode));
@@ -18,14 +20,14 @@ int empty(StackNode *root)
 {
     return !root;
 }
- 
+
 void push(StackNode** root, SnapShotStruct snapshot)
 {
     StackNode* stackNode = newNode(snapshot);
     stackNode->next = *root;
     *root = stackNode;
 }
- 
+
 SnapShotStruct pop(StackNode** root)
 {
     SnapShotStruct popped;
@@ -35,7 +37,7 @@ SnapShotStruct pop(StackNode** root)
     *root = (*root)->next;
     popped = temp->snapshot;
     free(temp);
- 
+
     return popped;
 }
 

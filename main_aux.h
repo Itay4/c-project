@@ -1,14 +1,18 @@
-#ifndef MAIN_AUX_H_
-#define MAIN_AUX_H_
 
+#ifndef SUDOKU90_MAIN_AUX_H
+#define SUDOKU90_MAIN_AUX_H
+
+#include <ctype.h>
 typedef int bool;
 #define true 1
 #define false 0
-
-/* Constants */
-#define MAX_CMD_SIZE 1024
 #define NUM_OF_ROWS 9
 #define NUM_OF_COLUMNS 9
+/* Constants */
+#define MAX_CMD_SIZE 1024 /*check if not 256. size of char is 1*/
+extern int rows;
+extern int cols;
+extern int mark_errors;
 #define BLOCK_SIZE 3
 #define UNASSIGNED 0
 #define FIXED_ERROR "Error: cell is fixed\n"
@@ -18,9 +22,9 @@ typedef int bool;
 
 /* Types */
 typedef struct  {
-	int number;
-	bool isFixed;
-	bool asterisk;
+    int number;
+    bool isFixed;
+    bool asterisk;
 } cell;
 
 bool inputValid(int num);
@@ -31,9 +35,8 @@ void exitGame(char* command);
 
 void memoryError(char* func);
 
-void copyBoard(cell source_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell new_board[NUM_OF_ROWS][NUM_OF_COLUMNS]);
+void copyBoard(cell **source_board, cell **new_board);
 
 bool isInteger(char *s);
 
-#endif /* MAIN_AUX_H_ */
-
+#endif /*SUDOKU90_MAIN_AUX_H*/
