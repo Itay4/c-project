@@ -14,7 +14,7 @@ node* CreateNode(data x) {
     new_node->next = NULL;
     return new_node;
 }
-
+/*maybe add function of create data- reset board and then copy new board to it*/
 list* CreateList(data x){
     list * list = malloc(sizeof(list));
     list->head = CreateNode(x);
@@ -35,6 +35,7 @@ void DeleteNextNodes(node* new_tail, list *lst) {
     else{
         while (current->next != NULL) {
             current = current->next;
+            /*free also data board*/
             free(current->prev);
         }
         free(current);
@@ -91,7 +92,7 @@ void Redo(list * lst, cell **board){
     lst->current = new_current;
     copyBoard(new_current->d.board, board);
     printBoard(board);
-    if (old_val == 0){
+    if (old_val == 0){/*put printing to function*/
         printf("Redo %d,%d: from - to %d\n",col_index, row_index,new_val);
     }
     else if (new_val == 0) {
@@ -118,7 +119,7 @@ void Undo(list * lst, cell **board){
     new_val = lst->current->d.board[row_index - 1][col_index - 1].number;
     copyBoard(lst->current->d.board, board);
     printBoard(board);
-    if (old_val == 0){
+    if (old_val == 0){ /*put printing to function*/
         printf("Redo %d,%d: from - to %d\n",col_index, row_index,new_val);
     }
     else if (new_val == 0) {
