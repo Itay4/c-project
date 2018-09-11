@@ -16,8 +16,9 @@ int main() {
     char *parsedCommand[4] = {'\0', '\0', '\0', '\0'};
     char *command = malloc(MAX_CMD_SIZE + 1);
     cell **board;
-    list *moves_list = NULL;
-    data new_data;
+    cell **starting_board;
+    list *moves_list;
+
     int argsCounter;
     char mode = 'I';
     int i;
@@ -32,35 +33,37 @@ int main() {
         if (parsedCommand[0] == NULL)  {
             /*Handles blank line*/
         } else if (strcmp(parsedCommand[0], "solve") == 0) { /*to add freeing moves list and board*/
+            if (mode != 'I'){ /*moving from edit to solve*/
+                freeBoard(board);
+                freeList(moves_list);
+            }
+            mode = 'S';
             board = NULL;
-            moves_list = NULL;
-            new_data.row_index = 0;
-            new_data.col_index =0;
-            new_data.col_index = 0;
-            mode = 'S';
             board = solveCommand(parsedCommand, mode);
-            new_data.board = generateEmptyBoard();
-            copyBoard(board, new_data.board);
-            moves_list = CreateList(new_data);
-            mode = 'S';
+            starting_board = NULL;
+            starting_board = generateEmptyBoard();
+            copyBoard(board, starting_board);
+            moves_list = NULL;
+            moves_list = CreateList(starting_board);
+
+
 
         } else if (strcmp(parsedCommand[0], "edit") == 0){ /*to add freeing moves list and board*/
-            board = NULL;
-            moves_list = NULL;
-            new_data.row_index = 0;
-            new_data.col_index =0;
-            new_data.col_index = 0;
+            if (mode != 'I') { /*moving from solve to edit*/
+                freeBoard(board);
+                freeList(moves_list);
+            }
             mode = 'E';
+            board = NULL;
             board = editCommand(parsedCommand, mode);
-            new_data.board = generateEmptyBoard();
-            copyBoard(board, new_data.board);
-            moves_list = CreateList(new_data);
-
+            starting_board = NULL;
+            starting_board = generateEmptyBoard();
+            copyBoard(board, starting_board);
+            moves_list = NULL;
+            moves_list = CreateList(starting_board);
         } else {
             executeCommand(parsedCommand, board, command, argsCounter, mode, moves_list);
-
         }
-
         for (i = 0; i < 4; i++){
             parsedCommand[i] = '\0';
         }

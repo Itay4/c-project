@@ -3,6 +3,8 @@
 #define SUDOKU90_MAIN_AUX_H
 
 #include <ctype.h>
+
+
 typedef int bool;
 #define true 1
 #define false 0
@@ -38,5 +40,7 @@ void memoryError(char* func);
 void copyBoard(cell **source_board, cell **new_board);
 
 bool isInteger(char *s);
+
+void freeBoard(cell** board);
 
 #endif /*SUDOKU90_MAIN_AUX_H*/

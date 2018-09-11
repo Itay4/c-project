@@ -5,15 +5,8 @@
 
 #include "main_aux.h"
 
-typedef struct data {
-    int col_index;
-    int row_index;
-    int value;
-    cell **board;
-}data;
-
 typedef struct node {
-    data d;
+    cell ** board;
     struct node *next;
     struct node *prev;
 }node;
@@ -25,12 +18,15 @@ typedef struct list
     node *tail;
 }list;
 
-node* CreateNode(data x);
-list* CreateList(data x);
-void InsertAtTail(data d, list *lst);
+node* CreateNode(cell **board);
+list* CreateList(cell **board);
+void InsertAtTail(cell **board, list *lst);
 void DeleteNextNodes(node* new_tail, list *lst);
-void DeleteList(list * lst);
+void freeList(list * lst);
+void printBoardChanges(cell ** old_board, cell ** new_board);
 void Redo(list * lst, cell **board);
 void Undo(list * lst, cell **board);
+void reset(list * lst, cell **board);
+
 
 #endif /*SUDOKU90_LINKED_LIST_H*/
