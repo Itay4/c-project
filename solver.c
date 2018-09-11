@@ -9,34 +9,9 @@
 #include <string.h>
 #define UNUSED(x) (void)(x)
 
-bool isValid(int number, cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column) {
-    /*
-     * Checks if given number is valid to set in given game board and position according to sudoku game rules
-     */
 
-    int i = 0;
-    int sectorRow = 3 * (row / 3);
-    int sectorCol = 3 * (column / 3);
-    int row1 = (row + 2) % 3;
-    int row2 = (row + 4) % 3;
-    int col1 = (column + 2) % 3;
-    int col2 = (column + 4) % 3;
 
-    /* Check for the value in the given row and column */
-    for (i = 0; i < 9; i++) {
-        if (board[i][column].number == number) return false;
-        if (board[row][i].number == number) return false;
-    }
-
-    /* Check the remaining four spaces in this sector */
-    if (board[row1+sectorRow][col1+sectorCol].number == number) return false;
-    if (board[row2+sectorRow][col1+sectorCol].number == number) return false;
-    if (board[row1+sectorRow][col2+sectorCol].number == number) return false;
-    if (board[row2+sectorRow][col2+sectorCol].number == number) return false;
-    return true;
-}
-
-bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column) {
+bool recursiveBacktrack(cell** board, int row, int column) {
     /*
      * Recursive backtrack to solve sudoku board
      */
@@ -58,7 +33,7 @@ bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int co
         return false;
     }
     for (i = 1; i < 10; i++){
-        if (isValid(i, board, row, column)) {
+        if (validCheck(board, column, row, i)) {
             availableNumbers[j] = i;
             j++;}
     }
@@ -86,7 +61,7 @@ bool recursiveBacktrack(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int co
 
 
 
-void setFixedCells(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells) {
+void setFixedCells(cell **board, int fixedCells) {
     /*
      * Randomly chooses given number of cells in the game board and sets them as fixed
      */
@@ -104,7 +79,7 @@ void setFixedCells(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells) {
     }
 }
 
-void generateSolvedBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS], int fixedCells){
+void generateSolvedBoard(cell** board, int fixedCells){
     /*
      * Generates solved sudoku game board
      */

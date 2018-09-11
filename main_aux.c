@@ -54,7 +54,7 @@ void copyBoard(cell **source_board, cell **new_board){
             /*printf("I: %d, J: %d\n", i, j);*/
 
             new_board[i][j].number = source_board[i][j].number;
-
+            new_board[i][j].asterisk = source_board[i][j].asterisk;
             new_board[i][j].isFixed = source_board[i][j].isFixed;
 
         }

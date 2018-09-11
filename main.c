@@ -31,34 +31,36 @@ int main() {
         /*put all beneath in function match cmd*/
         if (parsedCommand[0] == NULL)  {
             /*Handles blank line*/
-        } else if (strcmp(parsedCommand[0], "solve") == 0) {
+        } else if (strcmp(parsedCommand[0], "solve") == 0) { /*to add freeing moves list and board*/
             board = NULL;
             moves_list = NULL;
             new_data.row_index = 0;
             new_data.col_index =0;
             new_data.col_index = 0;
-            board = solveCommand(parsedCommand);
+            mode = 'S';
+            board = solveCommand(parsedCommand, mode);
             new_data.board = generateEmptyBoard();
             copyBoard(board, new_data.board);
             moves_list = CreateList(new_data);
             mode = 'S';
 
-        } else if (strcmp(parsedCommand[0], "edit") == 0){
+        } else if (strcmp(parsedCommand[0], "edit") == 0){ /*to add freeing moves list and board*/
             board = NULL;
             moves_list = NULL;
             new_data.row_index = 0;
             new_data.col_index =0;
             new_data.col_index = 0;
-            board = editCommand(parsedCommand);
+            mode = 'E';
+            board = editCommand(parsedCommand, mode);
             new_data.board = generateEmptyBoard();
             copyBoard(board, new_data.board);
             moves_list = CreateList(new_data);
-            mode = 'E';
+
         } else {
             executeCommand(parsedCommand, board, command, argsCounter, mode, moves_list);
 
         }
-        /*else is redo undo!!!!!!!!!!!! create here linked lst? init in each mode and when del? switching between  modes*/
+
         for (i = 0; i < 4; i++){
             parsedCommand[i] = '\0';
         }
