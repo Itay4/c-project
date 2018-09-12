@@ -24,7 +24,7 @@ bool val_in_block(cell **board, int column, int row, int val);
 
 bool valid_check(cell **board, int column, int row, int val);
 
-int set(cell **board, int column, int row, int val, char mode);
+bool set(cell **board, int column, int row, int val, char mode);
 
 /*void validate(cell **board);*/
 
@@ -42,7 +42,7 @@ void mark_errors_command(int value);
 
 void save_command(cell **board, char *filePath, char mode);
 
-int auto_fill(cell **board);
+bool auto_fill(cell **board);
 
 void num_solutions(cell **board);
 

@@ -72,7 +72,7 @@ void free_list(list * lst){
     lst = NULL;
 }
 
-void print_board_changes(cell ** oldBoard, cell ** newBoard) {
+void print_board_changes(cell ** oldBoard, cell ** newBoard, char* cmdType) {
     int i, j, oldVal, newVal;
     int N = blockRows * blockCols;
 
@@ -82,11 +82,11 @@ void print_board_changes(cell ** oldBoard, cell ** newBoard) {
             newVal = newBoard[i][j].number;
             if (oldVal != newVal) {
                 if (oldVal == UNASSIGNED) {
-                    printf("Redo %d,%d: from _ to %d\n", j + 1, i + 1, newVal);
+                    printf("%s %d,%d: from _ to %d\n",cmdType, j + 1, i + 1, newVal);
                 } else if (newVal == UNASSIGNED) {
-                    printf("Redo %d,%d: from %d to _\n", j + 1, i + 1, oldVal);
+                    printf("%s %d,%d: from %d to _\n",cmdType, j + 1, i + 1, oldVal);
                 } else {
-                    printf("Undo %d,%d: from %d to %d\n", j + 1, i + 1, oldVal, newVal);
+                    printf("%s %d,%d: from %d to %d\n",cmdType, j + 1, i + 1, oldVal, newVal);
                 }
             }
         }
@@ -102,7 +102,7 @@ void redo(list * lst, cell **board, char mode){
     newCurrent = lst->current->next;
     copy_board(newCurrent->board, board);
     print_board(board, mode);
-    print_board_changes(lst->current->board, newCurrent->board);
+    print_board_changes(lst->current->board, newCurrent->board, "Redo");
     lst->current = newCurrent;
 }
 
@@ -115,7 +115,7 @@ void undo(list * lst, cell **board, char mode){
     newCurrent = lst->current->prev;
     copy_board(newCurrent->board, board);
     print_board(board, mode);
-    print_board_changes(lst->current->board, newCurrent->board);
+    print_board_changes(lst->current->board, newCurrent->board, "Undo");
     lst->current = newCurrent;
 }
 

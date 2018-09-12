@@ -14,7 +14,7 @@ typedef int bool;
 #define NUM_OF_ROWS 9  /* TODO: remove */
 #define NUM_OF_COLUMNS 9 /* TODO: remove */
 #define BLOCK_SIZE 3 /* TODO: remove */
-#define MAX_CMD_SIZE 1024 /* TODO:check if not 256. size of char is 1*/
+#define MAX_CMD_SIZE 256
 
 #define FIXED_ERROR "Error: cell is fixed\n"
 #define VALUE_RANGE_ERROR "Error: value not in range 0-%d\n"
