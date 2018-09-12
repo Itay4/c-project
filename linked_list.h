@@ -11,22 +11,21 @@ typedef struct node {
     struct node *prev;
 }node;
 
-typedef struct list
-{
+typedef struct list {
     node *head;
     node *current;
     node *tail;
 }list;
 
-node* CreateNode(cell **board);
-list* CreateList(cell **board);
-void InsertAtTail(cell **board, list *lst);
-void DeleteNextNodes(node* new_tail, list *lst);
-void freeList(list * lst);
-void printBoardChanges(cell ** old_board, cell ** new_board);
-void Redo(list * lst, cell **board);
-void Undo(list * lst, cell **board);
-void reset(list * lst, cell **board);
+node* create_node(cell **board);
+list* create_list(cell **board);
+void insert_at_tail(cell **board, list *lst);
+void delete_next_nodes(node* new_tail, list *lst);
+void free_list(list * lst);
+void print_board_changes(cell ** old_board, cell ** new_board);
+void redo(list * lst, cell **board, char mode);
+void undo(list * lst, cell **board, char mode);
+void reset(list * lst, cell **board, char mode);
 
 
 #endif /*SUDOKU90_LINKED_LIST_H*/
