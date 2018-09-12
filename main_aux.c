@@ -31,6 +31,7 @@ void exitGame(char* command){
      */
     printf("Exiting...\n");
     free(command);
+
     exit(0);
 }
 
@@ -69,4 +70,15 @@ bool isInteger(char *s){
         }
     }
     return true;
+}
+
+void freeBoard(cell** board){
+    int i;
+    int N = rows * cols;
+    for (i = 0; i < N; i++) {
+        free(board[i]);
+    }
+    free(board);
+    board = NULL;
+
 }

@@ -40,7 +40,7 @@ void markErrorsCommand(char* value);
 
 void saveCommand(cell **board, char *filePath, char mode);
 
-void autoFill(cell **board);
+int autoFill(cell **board);
 
 void numSolutions(cell **board);
 
