@@ -23,6 +23,8 @@ typedef int bool;
 #define GAME_OVER "Puzzle solved successfully\n"
 #define VALIDATION_ERROR "Validation failed: board is unsolvable\n"
 
+#define ERRONEOUS_ERROR "Error: board contains erroneous values\n"
+
 /* Types */
 typedef struct  { /* TODO: sonsider to move to game.h */
     int number;
@@ -43,5 +45,9 @@ bool is_integer(char *s);
 int get_block_col_index(int column);
 
 int get_block_row_index(int row);
+
+bool valid_board_index(int index, int N);
+
+bool valid_set_value(int val, int N);
 
 #endif /*SUDOKU90_MAIN_AUX_H*/

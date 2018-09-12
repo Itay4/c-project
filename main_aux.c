@@ -50,3 +50,16 @@ int get_block_row_index(int row){
     initialRow = blockRows * (blockNumberRows - 1);
     return initialRow;
 }
+bool valid_board_index(int index, int N){
+    if (index < 1 || index > N ) {
+        return false;
+    }
+    return true;
+}
+
+bool valid_set_value(int val, int N){
+    if (val < 0 || val > N ) {
+        return false;
+    }
+    return true;
+}

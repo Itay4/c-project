@@ -4,30 +4,33 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 #include "main_aux.h"
 #include "parser.h"
 #include "solver.h"
 #include "game.h"
 #include "stack.h"
 #include "linked_list.h"
+#include <unistd.h>
 
 extern int blockRows;
 extern int blockCols;
 extern int markErrors;
 
 
-cell **generate_empty_board(){
+cell ** generate_empty_board(){
     int i, j, N;
     cell **board = NULL;
-   blockRows, blockCols = 3;
+    blockRows = 3;
+    blockCols = 3;
     N =  blockRows * blockCols;
-    board = calloc(N, sizeof *board);
+    board = calloc(N, sizeof (*board));
     for (i = 0; i < N; i++) {
-        board[i] = calloc(N, sizeof **board);
+        board[i] = calloc(N, sizeof (**board));
     }
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
-            board[i][j].number = 0;
+            board[i][j].number = UNASSIGNED;
             board[i][j].isFixed = false;
             board[i][j].asterisk = false;
         }
@@ -58,6 +61,7 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
     /*
      * Evaluates game command (SET/HINT/VALIDATE/RESTART/EXIT) and calls the relavent function to execute it
      */
+    /*TODO: missing generate X Y (add when ILP done)*/
     int setFlag = 0;
     int fillFlag = 0;
     cell ** boardAfter;
@@ -80,9 +84,9 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
         hint(board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
     } else if (strcmp(parsedCommand[0], "validate") == 0  && (mode == 'E' || mode == 'S')) {
         /*validate(board);*/
-    } else if (strcmp(parsedCommand[0], "print_board") == 0 && (mode == 'E' || mode == 'S')) {
-        print_board(board);
-    } else if (strcmp(parsedCommand[0], "mark_errors") == 0 && mode == 'S') {
+    } else if ((strcmp(parsedCommand[0], "print_board") == 0) && (mode == 'E' || mode == 'S')) {
+        print_board(board, mode);
+    } else if (strcmp(parsedCommand[0], "mark_errors") == 0 && (mode == 'S')) {
         if (!is_integer(parsedCommand[1])) {
             printf(MARK_ERROR_ERROR);
             return;
@@ -91,7 +95,7 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
     } else if (strcmp(parsedCommand[0], "autofill") == 0 && mode == 'S') {
         fillFlag = auto_fill(board);
         if (fillFlag == 1) {
-            boardAfter = generate_empty_board(blockRows, blockCols);
+            boardAfter = generate_empty_board();
             copy_board(board, boardAfter);
             insert_at_tail(boardAfter, lst);
         }
@@ -99,12 +103,12 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
         save_command(board, parsedCommand[1], mode);
     } else if (strcmp(parsedCommand[0], "num_solutions") == 0 && (mode == 'E' || mode == 'S')) {
         num_solutions(board);
-    } else if (strcmp(parsedCommand[0], "undo") == 0) {
-        undo(lst, board);
-    } else if (strcmp(parsedCommand[0], "redo") == 0) {
-        redo(lst, board);
-    } else if (strcmp(parsedCommand[0], "reset") == 0) {
-        reset(lst, board);
+    } else if (((strcmp(parsedCommand[0], "undo") == 0)) && (mode == 'E' || mode == 'S')) {
+        undo(lst, board, mode);
+    } else if (((strcmp(parsedCommand[0], "redo") == 0)) && (mode == 'E' || mode == 'S')) {
+        redo(lst, board, mode);
+    } else if (((strcmp(parsedCommand[0], "reset") == 0)) && (mode == 'E' || mode == 'S')) {
+        reset(lst, board, mode);
     } else if (strcmp(parsedCommand[0], "exit") == 0) {
         free_board(board);
         free_list(lst);
@@ -114,20 +118,20 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
     }
 }
 
-void print_seperator(int N, int n) {
+void print_separator(int N, int m) {
     /*
-     * Helper function to printBoard() which prints block seperators
+     * Helper function to printBoard() which prints block separators
      */
     char dash = '-';
     int i;
-    int count = 4 * N + n + 1;
+    int count = 4 * N + m + 1;
     for (i = 0; i < count; i++) {
         putchar(dash);
     }
     putchar('\n');
 }
 
-void print_board(cell **board) { /*TODO: *update with mode- print always atrisk in edit*/
+void print_board(cell **board, char mode) {
     /*
      * Prints the sudoku board according to the format
      */
@@ -135,7 +139,7 @@ void print_board(cell **board) { /*TODO: *update with mode- print always atrisk 
     int N = blockRows * blockCols;
     for (i = 0; i < N; i++) {
         if (i % blockRows == 0){
-            print_seperator(N, blockRows);
+            print_separator(N, blockRows);
         }
         for (j=0; j < N; j++) {
             if (j % blockCols == 0) {
@@ -146,20 +150,20 @@ void print_board(cell **board) { /*TODO: *update with mode- print always atrisk 
                 printf("%2d", board[i][j].number);
                 printf(".");
             }
-            else if (board[i][j].asterisk && markErrors /*|| edit*/) {
+            else if ((board[i][j].asterisk) && (markErrors || mode == 'E')) {
                 printf("%2d", board[i][j].number);
                 printf("*");
             }
             else if (board[i][j].number != UNASSIGNED){
                 printf("%2d ", board[i][j].number);
             }
-            else{
+            else{ /*printing blank spaces for UNASSIGNED*/
                 printf("   ");
             }
         }
         printf("|\n");
     }
-    print_seperator(N, blockRows);
+    print_separator(N, blockRows);
 }
 
 void num_solutions(cell **board) {
@@ -312,12 +316,12 @@ void save_command(cell **board, char *filePath,char mode) {
 
     if (mode == 'E') {
         if (check_board_erroneous(board)) {
-            printf("Error: board contains erroneous values\n");
+            printf(ERRONEOUS_ERROR);
             return;
         }
       /*
         else if (validate(board) == false) {
-            printf("Error: board validation failed\n");
+            printf(VALIDATION_ERROR);
             return;
       }
         */
@@ -327,7 +331,7 @@ void save_command(cell **board, char *filePath,char mode) {
         printf("Error: File cannot be created or modified\n");
     }
 
-    fprintf(fp, "%d %d\n", blockCols, blockRows);
+    fprintf(fp, "%d %d\n", blockRows, blockCols);
     N = blockRows * blockCols;
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
@@ -361,16 +365,16 @@ cell **load_board(FILE* fp, char mode){/*add char mode- in edit need to clear al
     char line[257];
     char *token;
     char *delimiter = " \t\r\n";
-    if (fgets(line, 256+1, fp) != NULL){
+    if (fgets(line, 256 + 1, fp) != NULL){
         token = strtok(line, delimiter);
-        blockCols = atoi(token);
-        token = strtok(NULL, delimiter);
         blockRows = atoi(token);
+        token = strtok(NULL, delimiter);
+        blockCols = atoi(token);
     }
     N = blockRows * blockCols;
-    board = calloc(N, sizeof *board);
+    board = calloc(N, sizeof (*board));
     for (i = 0; i < N; i++) {
-        board[i] = calloc(N, sizeof **board);
+        board[i] = calloc(N, (sizeof **board));
     }
     for (i = 0; i < N; i++) {
         fgets(line, 256, fp);
@@ -391,10 +395,9 @@ cell **load_board(FILE* fp, char mode){/*add char mode- in edit need to clear al
 
 
 
-cell **edit_command(char* parsedCommand[4], char mode){
+cell ** edit_command(char* parsedCommand[4], char mode){
     cell **board = NULL;
-    markErrors = 1;
-    FILE* fp;
+    FILE* fp = NULL;
     if (parsedCommand[1] != '\0'){
         fp = fopen(parsedCommand[1], "r");
         if (fp != NULL) {
@@ -403,21 +406,28 @@ cell **edit_command(char* parsedCommand[4], char mode){
         }
         else {
             printf("Error: File cannot be opened\n");
+            return board;
         }
     }
     else {
         board = generate_empty_board();
     }
-    print_board(board);
+    markErrors = 1;
+    print_board(board, mode);
     return board;
 }
 
 cell **solve_command(char* parsedCommand[4],char mode){
     cell **board = NULL;
-    FILE* fp = fopen(parsedCommand[1], "r");
-    if (fp) {
-        board = load_board(fp,mode);
-        print_board(board);
+    FILE* fp = NULL;
+    if (parsedCommand[1] == '\0'){
+        printf(INVALID_ERROR);
+        return board;
+    }
+    fp = fopen(parsedCommand[1], "r");
+    if (fp != NULL) {
+        board = load_board(fp, mode);
+        print_board(board, mode);
         fclose(fp);
     } else {
         printf("Error: File doesn't exist or cannot be opened\n");
@@ -510,14 +520,14 @@ void game_over(cell **board){
     /*TODO: validaeion with ILP*/
 
     int col, row;
-    bool full = true;
+    /*bool full = true;*/
     if (check_board_erroneous(board)){
         return;
     }
         for (col = 0; col < NUM_OF_COLUMNS; col++) {
         for (row = 0; row < NUM_OF_ROWS; row++) {
             if (board[row][col].number == UNASSIGNED) {
-                full = false;
+                /*full = false;*/
             }
         }
     }
@@ -526,6 +536,10 @@ void game_over(cell **board){
         if validate(board){
             printf(GAME_OVER);
             mode = 'I';
+        }
+    else{
+     printf("Puzzle solution erroneous\n");
+
     }
      */
 }
@@ -566,7 +580,7 @@ int auto_fill(cell **board)	{
 
         }
     }
-    print_board(board);
+    print_board(board, 'E');
     game_over(board);
     return fillFlag;
 }
@@ -612,29 +626,30 @@ void validate_risks(cell **board, int column, int row) {
 
 int set(cell **board, int column, int row, int val, char mode) {
     int N = blockRows * blockCols;
-    if (column < 1 || row < 1 || val < 0 || column > N || row  > N || val > N  ) {
+    if((!valid_board_index(column, N)) || (!valid_board_index(row, N)) || (!valid_set_value(val, N))){
         printf(VALUE_RANGE_ERROR, blockCols * blockRows);
+        return 0;
     }
      if (board[row - 1][column - 1].isFixed) {
         printf(FIXED_ERROR);
         return 0;
      }
      else if (board[row - 1][column - 1].number == val) {
-         print_board(board);
+         print_board(board, mode);
          return  0;
     }
     else if (val == 0) {
         board[row - 1][column - 1].number = UNASSIGNED;
         board[row - 1][column - 1].asterisk = false;
         validate_risks(board, column,row);
-        print_board(board);
+        print_board(board, mode);
         return 1;
     }
     else {
         valid_check(board, column, row, val); /*make valid check to updated astrisk*/
         board[row - 1][column - 1].number = val;
         validate_risks(board, column, row);
-        print_board(board);
+        print_board(board, mode);
         if (mode == 'S'){
             game_over(board);
         }

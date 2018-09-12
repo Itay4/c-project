@@ -4,15 +4,13 @@
 #include "linked_list.h"
 #include "main_aux.h"
 
-extern int blockRows;
-extern int blockCols;
-extern int mark_errors;
+
 
 cell **generate_empty_board();
 
 void copy_board(cell **source_board, cell **new_board);
 
-void print_board(cell **board);
+void print_board(cell **board, char mode);
 
 void execute_command(char *parsedCommand[4], cell **board, char* command, int counter, char mode, list *lst);
 

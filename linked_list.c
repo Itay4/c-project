@@ -82,9 +82,9 @@ void print_board_changes(cell ** oldBoard, cell ** newBoard) {
             newVal = newBoard[i][j].number;
             if (oldVal != newVal) {
                 if (oldVal == UNASSIGNED) {
-                    printf("Redo %d,%d: from - to %d\n", j + 1, i + 1, newVal);
+                    printf("Redo %d,%d: from _ to %d\n", j + 1, i + 1, newVal);
                 } else if (newVal == UNASSIGNED) {
-                    printf("Redo %d,%d: from %d to -\n", j + 1, i + 1, oldVal);
+                    printf("Redo %d,%d: from %d to _\n", j + 1, i + 1, oldVal);
                 } else {
                     printf("Undo %d,%d: from %d to %d\n", j + 1, i + 1, oldVal, newVal);
                 }
@@ -93,7 +93,7 @@ void print_board_changes(cell ** oldBoard, cell ** newBoard) {
     }
 }
 
-void redo(list * lst, cell **board){
+void redo(list * lst, cell **board, char mode){
     node * newCurrent;
     if ((lst->current == lst->tail) || (lst->head->next == NULL)) {
         printf("Error: no moves to redo\n");
@@ -101,12 +101,12 @@ void redo(list * lst, cell **board){
     }
     newCurrent = lst->current->next;
     copy_board(newCurrent->board, board);
-    print_board(board);
+    print_board(board, mode);
     print_board_changes(lst->current->board, newCurrent->board);
     lst->current = newCurrent;
 }
 
-void undo(list * lst, cell **board){
+void undo(list * lst, cell **board, char mode){
     node * newCurrent;
     if ((lst->current == lst->head) || (lst->head->next == NULL)){
         printf("Error: no moves to undo\n");
@@ -114,15 +114,15 @@ void undo(list * lst, cell **board){
     }
     newCurrent = lst->current->prev;
     copy_board(newCurrent->board, board);
-    print_board(board);
+    print_board(board, mode);
     print_board_changes(lst->current->board, newCurrent->board);
     lst->current = newCurrent;
 }
 
-void reset(list * lst, cell **board){
+void reset(list * lst, cell **board,char mode){
     delete_next_nodes(lst->head, lst);
     copy_board(lst->current->board, board);
-    print_board(board);
+    print_board(board, mode);
     printf("Board reset\n");
 
 }
