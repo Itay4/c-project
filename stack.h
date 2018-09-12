@@ -1,30 +1,24 @@
+#include "main_aux.h"
 
+#ifndef STACK_H_
+#define STACK_H_
 
-#ifndef SUDOKU90_STACK_H
-#define SUDOKU90_STACK_H
+typedef struct element {
+	int* data;
+	cell** board;
+	struct element *next;
+}element;
 
-
-typedef struct SnapShotStruct {
-    int i;
-    int j;
-    int counter;
-    int stage;
-}SnapShotStruct;
-
-typedef struct StackNode
+typedef struct stack_t
 {
-    struct SnapShotStruct snapshot;
-    struct StackNode* next;
-}StackNode;
+	int counter;
+	element *top;
+}stack;
 
-struct StackNode* newNode(SnapShotStruct snapshot);
+void stack_initialize(stack* stck);
 
-int empty(StackNode *root);
+void push(int* data, cell** board, stack* stck);
 
-void push(StackNode** root, SnapShotStruct snapshot);
+element* pop(stack* stck);
 
-SnapShotStruct pop(StackNode** root);
-
-SnapShotStruct top(StackNode* root);
-
-#endif /*SUDOKU90_STACK_H*/
+#endif /* STACK_H_ */

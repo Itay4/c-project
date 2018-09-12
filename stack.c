@@ -1,51 +1,31 @@
-
-
+#include "stack.h"
+#include "main_aux.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-#include "stack.h"
 
-StackNode* newNode(SnapShotStruct snapshot)
-{
-    StackNode* stackNode = (StackNode*) malloc(sizeof(StackNode));
-    stackNode->snapshot.i = snapshot.i;
-    stackNode->snapshot.j = snapshot.j;
-    stackNode->snapshot.counter = snapshot.counter;
-    stackNode->snapshot.stage = snapshot.stage;
-    stackNode->next = NULL;
-    return stackNode;
+void stack_initialize(stack* stck ) {
+    /* Initializes a stack */
+    stck->counter = 0;
+    stck->top = NULL;
 }
 
-int empty(StackNode *root)
-{
-    return !root;
+
+void push(int* data, cell** board, stack* stck ) {
+    /* Pushes an element to top of stack*/
+    element *e = NULL;
+    e = (element*) (malloc(sizeof(element)));
+    e->data = data;
+    e->board = board;
+    e->next = stck->top;
+    stck->top = e;
+    stck->counter++;
 }
 
-void push(StackNode** root, SnapShotStruct snapshot)
-{
-    StackNode* stackNode = newNode(snapshot);
-    stackNode->next = *root;
-    *root = stackNode;
-}
-
-SnapShotStruct pop(StackNode** root)
-{
-    SnapShotStruct popped;
-    StackNode* temp = *root;
-    if (empty(*root))
-        return popped;
-    *root = (*root)->next;
-    popped = temp->snapshot;
-    free(temp);
-
-    return popped;
-}
-
-SnapShotStruct top(StackNode* root)
-{
-    SnapShotStruct snapshot;
-    if (empty(root))
-        return snapshot;
-    snapshot = root->snapshot;
-    return snapshot;
+element* pop(stack* stck) {
+    /* Gets the stack top elemnent data */
+    element *e = NULL;
+    e = stck->top;
+    stck->top = stck->top->next;
+    stck->counter--;
+    return e;
 }

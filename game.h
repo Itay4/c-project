@@ -1,6 +1,6 @@
 
-#ifndef SUDOKU90_GAME_H
-#define SUDOKU90_GAME_H
+#ifndef GAME_H
+#define GAME_H
 #include "linked_list.h"
 
 cell **generateEmptyBoard();
@@ -46,6 +46,4 @@ void numSolutions(cell **board);
 
 int countSolutions(cell **board);
 
-int countSolutionsRec(cell **board, int i, int j, int counter);
-
-#endif /*SUDOKU90_GAME_H*/
+#endif /* GAME_H */
