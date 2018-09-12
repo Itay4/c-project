@@ -4,8 +4,8 @@
 #include "linked_list.h"
 #include "main_aux.h"
 
-extern int rows;
-extern int cols;
+extern int blockRows;
+extern int blockCols;
 extern int mark_errors;
 
 cell **generate_empty_board();

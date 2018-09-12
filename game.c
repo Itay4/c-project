@@ -11,15 +11,16 @@
 #include "stack.h"
 #include "linked_list.h"
 
-extern int rows;
-extern int cols;
+extern int blockRows;
+extern int blockCols;
 extern int markErrors;
 
 
 cell **generate_empty_board(){
     int i, j, N;
     cell **board = NULL;
-    N = rows * cols;
+   blockRows, blockCols = 3;
+    N =  blockRows * blockCols;
     board = calloc(N, sizeof *board);
     for (i = 0; i < N; i++) {
         board[i] = calloc(N, sizeof **board);
@@ -39,7 +40,7 @@ void copy_board(cell **source_board, cell **new_board){
      * Copying source sudoku board to new sudoku board.
      */
     int i,j;
-    int N = rows * cols;
+    int N = blockRows * blockCols;
 
     for (i=0; i < N; i++) {
         for (j=0; j < N; j++){
@@ -62,18 +63,18 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
     cell ** boardAfter;
     if (strcmp(parsedCommand[0], "set") == 0 && counter == 4 && (mode == 'E' || mode == 'S')) {
         if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2])) || (!is_integer(parsedCommand[3]))){
-            printf(VALUE_RANGE_ERROR,cols*rows);
+            printf(VALUE_RANGE_ERROR, blockCols * blockRows);
             return;
         }
         setFlag = set(board, atoi(parsedCommand[1]),atoi(parsedCommand[2]), atoi(parsedCommand[3]), mode);
         if (setFlag == 1) {
-            boardAfter = generate_empty_board(rows, cols);
+            boardAfter = generate_empty_board(blockRows, blockCols);
             copy_board(board, boardAfter);
             insert_at_tail(boardAfter, lst);
         }
     } else if (strcmp(parsedCommand[0], "hint") == 0 &&  counter == 3 && mode == 'S') {
         if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2]))){
-            printf(VALUE_RANGE_ERROR, cols*rows);
+            printf(VALUE_RANGE_ERROR, blockCols*blockRows);
             return;
         }
         hint(board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
@@ -90,7 +91,7 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
     } else if (strcmp(parsedCommand[0], "autofill") == 0 && mode == 'S') {
         fillFlag = auto_fill(board);
         if (fillFlag == 1) {
-            boardAfter = generate_empty_board(rows, cols);
+            boardAfter = generate_empty_board(blockRows, blockCols);
             copy_board(board, boardAfter);
             insert_at_tail(boardAfter, lst);
         }
@@ -131,13 +132,13 @@ void print_board(cell **board) { /*TODO: *update with mode- print always atrisk 
      * Prints the sudoku board according to the format
      */
     int i,j;
-    int N = rows * cols;
+    int N = blockRows * blockCols;
     for (i = 0; i < N; i++) {
-        if (i % rows == 0){
-            print_seperator(N, rows);
+        if (i % blockRows == 0){
+            print_seperator(N, blockRows);
         }
         for (j=0; j < N; j++) {
-            if (j % cols == 0) {
+            if (j % blockCols == 0) {
                 printf("|");
             }
             printf(" ");
@@ -158,12 +159,12 @@ void print_board(cell **board) { /*TODO: *update with mode- print always atrisk 
         }
         printf("|\n");
     }
-    print_seperator(N, rows);
+    print_seperator(N, blockRows);
 }
 
 void num_solutions(cell **board) {
     int solutionsCounter = count_solutions(board);
-    /*int solutions_counter = count_solutions_rec(board, 0, 0, 0, *rows, *cols);*/
+    /*int solutions_counter = count_solutions_rec(board, 0, 0, 0, *blockRows, *blockCols);*/
     if (solutionsCounter == 0){
         printf("Error: board contains erroneous values\n");
     }
@@ -179,7 +180,7 @@ int count_solutions_rec(cell **board, int i, int j, int counter) {
     /*
      * Stack implementation
      */
-    int N = rows*cols;
+    int N = blockRows * blockCols;
     int k;
     if (i == N) {
         i = 0;
@@ -206,7 +207,7 @@ int count_solutions(cell **board) {
 
     */
 
-    int N = rows * cols;
+    int N = blockRows * blockCols;
 
     int returnValue, value;
 
@@ -326,8 +327,8 @@ void save_command(cell **board, char *filePath,char mode) {
         printf("Error: File cannot be created or modified\n");
     }
 
-    fprintf(fp, "%d %d\n", cols, rows);
-    N = rows * cols;
+    fprintf(fp, "%d %d\n", blockCols, blockRows);
+    N = blockRows * blockCols;
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             fprintf(fp, "%d", board[i][j].number);
@@ -362,11 +363,11 @@ cell **load_board(FILE* fp, char mode){/*add char mode- in edit need to clear al
     char *delimiter = " \t\r\n";
     if (fgets(line, 256+1, fp) != NULL){
         token = strtok(line, delimiter);
-        cols = atoi(token);
+        blockCols = atoi(token);
         token = strtok(NULL, delimiter);
-        rows = atoi(token);
+        blockRows = atoi(token);
     }
-    N = rows * cols;
+    N = blockRows * blockCols;
     board = calloc(N, sizeof *board);
     for (i = 0; i < N; i++) {
         board[i] = calloc(N, sizeof **board);
@@ -432,11 +433,10 @@ bool val_in_block(cell **board, int column, int row, int val){
 
     bool valExist = false;
     int initialCol, initialRow, colIndex, rowIndex;
-    /*consider to put in get index of cols and rows initial block*/
     initialCol = get_block_col_index(column);
     initialRow = get_block_row_index(row);
-    for (colIndex = initialCol; (colIndex < cols + initialCol); colIndex++) {
-        for (rowIndex = initialRow; (rowIndex < rows + initialRow); rowIndex++) {
+    for (colIndex = initialCol; (colIndex < blockCols + initialCol); colIndex++) {
+        for (rowIndex = initialRow; (rowIndex < blockRows + initialRow); rowIndex++) {
             if((colIndex == column - 1) && (rowIndex == row - 1)) { /*not checking cell to be changed*/}
             else if (board[rowIndex][colIndex].number == val) {
                 board[rowIndex][colIndex].asterisk= true;
@@ -452,7 +452,7 @@ bool val_in_row(cell **board, int column, int row, int val){
      * Checks if value exist in the given row
      */
 
-    int N = rows * cols;
+    int N = blockRows * blockCols;
     bool valExist = false;
     int colIndex;
     for (colIndex = 0; colIndex < N; colIndex++) {
@@ -471,7 +471,7 @@ bool val_in_column(cell **board, int column, int row, int val) {
     /*
      * Checks if value exist in the given column
      */
-    int N = rows * cols;
+    int N = blockRows * blockCols;
     bool valExist = false;
     int rowIndex;
     for (rowIndex = 0; rowIndex < N; rowIndex++) {
@@ -538,9 +538,9 @@ int auto_fill(cell **board)	{
     int i, j, k, candidate;
     int fillFlag = 0;
     int numOfCandidates = 0;
-    int maxValue = rows * cols + 1;
+    int maxValue = blockRows * blockCols + 1;
     cell **copyOfBoard;
-    int N = rows * cols;
+    int N = blockRows * blockCols;
     if (check_board_erroneous(board)){
         printf("Error: board contains erroneous values\n");
         return 0;
@@ -573,11 +573,11 @@ int auto_fill(cell **board)	{
 
 void validate_risks(cell **board, int column, int row) {
     int initialCol, initialRow, colIndex, rowIndex;
-    int N = rows*cols;
+    int N = blockRows * blockCols;
     initialCol = get_block_col_index(column);
     initialRow = get_block_row_index(row);
-    for (colIndex = initialCol; (colIndex < cols + initialCol); colIndex++) { /*block*/
-        for (rowIndex = initialRow; (rowIndex < rows + initialRow); rowIndex++) {
+    for (colIndex = initialCol; (colIndex < blockCols + initialCol); colIndex++) { /*block*/
+        for (rowIndex = initialRow; (rowIndex < blockRows + initialRow); rowIndex++) {
             if (colIndex == (column-1) && rowIndex == (row-1)) {
                 /*not checking cell to be changed*/
             }
@@ -611,9 +611,9 @@ void validate_risks(cell **board, int column, int row) {
 
 
 int set(cell **board, int column, int row, int val, char mode) {
-    int N = rows*cols;
+    int N = blockRows * blockCols;
     if (column < 1 || row < 1 || val < 0 || column > N || row  > N || val > N  ) {
-        printf(VALUE_RANGE_ERROR, cols * rows);
+        printf(VALUE_RANGE_ERROR, blockCols * blockRows);
     }
      if (board[row - 1][column - 1].isFixed) {
         printf(FIXED_ERROR);
@@ -645,7 +645,7 @@ int set(cell **board, int column, int row, int val, char mode) {
 
 bool check_board_erroneous(cell **board){
     int colIndex, rowIndex = 0;
-    int N = rows * cols;
+    int N = blockRows * blockCols;
     for (rowIndex = 0; rowIndex < N; rowIndex++) {
         for (colIndex = 0; colIndex < N; colIndex++) {
             if (board[rowIndex][colIndex].asterisk) {
@@ -691,7 +691,7 @@ void hint(cell **board, int column, int row){
 
 void free_board(cell** board){
     int i;
-    int N = rows * cols;
+    int N = blockRows * blockCols;
     for (i = 0; i < N; i++) {
         free(board[i]);
     }

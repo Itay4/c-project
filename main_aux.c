@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <ctype.h>
 
-extern int rows;
-extern int cols;
+extern int blockRows;
+extern int blockCols;
 extern int mark_errors;
 
 
@@ -39,14 +39,14 @@ bool is_integer(char *s){
 
 int get_block_col_index(int column){
     int initialCol;
-    int blockNumberCols = 1 + ((column - 1) / cols);
-    initialCol = cols * (blockNumberCols - 1);
+    int blockNumberCols = 1 + ((column - 1) / blockCols);
+    initialCol = blockCols * (blockNumberCols - 1);
     return initialCol;
 }
 
 int get_block_row_index(int row){
     int initialRow;
-    int blockNumberRows = 1 + ((row - 1) / rows);
-    initialRow = rows * (blockNumberRows - 1);
+    int blockNumberRows = 1 + ((row - 1) / blockRows);
+    initialRow = blockRows * (blockNumberRows - 1);
     return initialRow;
 }

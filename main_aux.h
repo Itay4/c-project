@@ -2,9 +2,9 @@
 #ifndef SUDOKU90_MAIN_AUX_H
 #define SUDOKU90_MAIN_AUX_H
 
-extern int rows;
-extern int cols;
-extern int mark_errors;
+extern int blockRows;
+extern int blockCols;
+extern int markErrors;
 
 typedef int bool;
 #define true 1

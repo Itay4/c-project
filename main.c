@@ -8,8 +8,8 @@
 #include <string.h>
 #include "linked_list.h"
 
-int rows = 3;
-int cols = 3;
+int blockRows;
+int blockCols;
 int markErrors = 1;
 
 int main() {
