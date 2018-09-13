@@ -16,6 +16,7 @@ extern int blockRows;
 extern int blockCols;
 extern int markErrors;
 extern char mode;
+extern bool gameOver;
 
 
 void empty_board(cell ** board) {
@@ -152,8 +153,10 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
     } else if (((strcmp(parsedCommand[0], "reset") == 0)) && (mode == 'E' || mode == 'S')) {
         reset(lst, board, mode);
     } else if (strcmp(parsedCommand[0], "exit") == 0) {
-        free_board(board);
-        free_list(lst);
+        if( mode != 'I' || gameOver) {
+            free_board(board);
+            free_list(lst);
+        }
         exit_game(command);
     } else {
         printf(INVALID_ERROR);
@@ -489,6 +492,7 @@ void game_over(cell **board){
         if (solvable) {
             printf(GAME_OVER);
             mode = 'I';
+            gameOver = true;
         } else {
             printf("Puzzle solution erroneous\n");
         }
@@ -681,7 +685,6 @@ void exit_game(char* command){
      */
     printf("Exiting...\n");
     free(command);
-
     exit(0);
 }
 
