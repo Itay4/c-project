@@ -1,6 +1,6 @@
 
-#ifndef SUDOKU90_MAIN_AUX_H
-#define SUDOKU90_MAIN_AUX_H
+#ifndef MAIN_AUX_H
+#define MAIN_AUX_H
 
 extern int blockRows;
 extern int blockCols;
@@ -32,10 +32,6 @@ typedef struct  { /* TODO: sonsider to move to game.h */
     bool asterisk;
 } cell;
 
-
-
-
-
 void del_from_arr(int position, int numbersLeft, int availableNumbers[]);
 
 void memory_error(char* func);
@@ -50,4 +46,6 @@ bool valid_board_index(int index, int N);
 
 bool valid_set_value(int val, int N);
 
-#endif /*SUDOKU90_MAIN_AUX_H*/
+int* get_next_play(cell** board);
+
+#endif /* MAIN_AUX_H */

@@ -63,7 +63,7 @@ bool recursive_backtrack(cell** board, int row, int column) {
 int get_actual_value(cell** board, int i, int j) {
     /* Gets the actual value of cell */
     int value = board[i][j].number;
-    int N = rows*cols;
+    int N = blockRows * blockCols;
     if (value < 0) {
         value = value * (-1);
     }
@@ -80,7 +80,7 @@ validPlays* get_valid_plays(cell** board, int i, int j) {
     int counter, k, l, roundI, roundJ, value, N;
     validPlays* result;
 
-    N = rows*cols;
+    N = blockRows * blockCols;
     counter = 0;
     plays = calloc(N+1, sizeof(int));
     for (k = 0; k < N; k++) {
@@ -96,10 +96,10 @@ validPlays* get_valid_plays(cell** board, int i, int j) {
         }
     }
 
-    roundI = i/rows;
-    roundJ = j/cols;
-    for (k = rows*roundI; k < rows*(roundI)+rows; k++){
-        for(l = cols*roundJ; l<cols+cols*roundJ; l++) {
+    roundI = i/blockRows;
+    roundJ = j/blockCols;
+    for (k = blockRows*roundI; k < blockRows*(roundI)+blockRows; k++){
+        for(l = blockCols*roundJ; l<blockCols+blockCols*roundJ; l++) {
             value = get_actual_value(board, k, l);
             if (value != 0) {
             plays[value] = 1;
@@ -130,8 +130,8 @@ cell** duplicate_board(cell** oldBoard) {
     /* Duplicates sudoku board */
     cell** newBoard;
     int N, i, j;
-    N = rows * cols;
-    newBoard=generateEmptyBoard();
+    N = blockRows * blockCols;
+    newBoard = generate_empty_board();
     for (i = 0; i < N; i++){
         for (j = 0; j < N; j++) {
             newBoard[i][j].number = oldBoard[i][j].number;
@@ -151,7 +151,7 @@ int deterministic_backtrack(cell** board, int i, int j) {
     cell** auxBoard;
     cell** finalBoard;
     stack* stck=calloc(1,sizeof(stack));
-    N = rows * cols;
+    N = blockRows * blockCols;
 
     stack_initialize(stck);
     data[0]=i;
@@ -259,8 +259,8 @@ void send_error(int error, char* str, GRBenv* env){
 cell** prepare_board_for_gurobi(cell** board) {
     /* Prepares board for Gurobi by fixing its values */
     int i, j, N;
-    cell** resultBoard= generateEmptyBoard();
-    N = rows * cols;
+    cell** resultBoard= generate_empty_board();
+    N = blockRows * blockCols;
     for (i = 0; i < N; i++){
         for (j = 0; j < N; j++){
             resultBoard[i][j].number = get_actual_value(board, i, j);
@@ -278,9 +278,9 @@ int ILP(cell **board, cell **solvedBoard) {
     double *lb, *val, objval, *sol;
     char *vtype, **names, *namestorage, *cursor;
 
-    n = rows;
-    m = cols;
-    N = rows * cols;
+    n = blockRows;
+    m = blockCols;
+    N = n * m;
     error = 0;
     auxBoard = prepare_board_for_gurobi(board);
     names = (char**) calloc(N*N*N, sizeof(char*));
