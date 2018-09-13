@@ -477,11 +477,12 @@ void game_over(cell **board){
     bool solvable;
     bool full = true;
     cell** copyBoard;
+    int N = blockCols * blockRows;
     if (check_board_erroneous(board)){
         return;
     }
-    for (col = 0; col < NUM_OF_COLUMNS; col++) {
-        for (row = 0; row < NUM_OF_ROWS; row++) {
+    for (col = 0; col < N; col++) {
+        for (row = 0; row < N; row++) {
             if (board[row][col].number == UNASSIGNED) {
                 full = false;
             }
