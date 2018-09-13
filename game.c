@@ -21,8 +21,7 @@ extern int markErrors;
 cell ** generate_empty_board(){
     int i, j, N;
     cell **board = NULL;
-    blockRows = 3;
-    blockCols = 3;
+
     N =  blockRows * blockCols;
     board = calloc(N, sizeof (*board));
     for (i = 0; i < N; i++) {
@@ -44,6 +43,7 @@ void copy_board(cell **source_board, cell **new_board){
      */
     int i,j;
     int N = blockRows * blockCols;
+
 
     for (i=0; i < N; i++) {
         for (j=0; j < N; j++){
@@ -374,7 +374,8 @@ cell **load_board(FILE* fp, char mode){/*add char mode- in edit need to clear al
     char line[257];
     char *token;
     char *delimiter = " \t\r\n";
-    if (fgets(line, 256 + 1, fp) != NULL){
+    if (fgets(line, 257, fp) != NULL){
+
         token = strtok(line, delimiter);
         blockRows = atoi(token);
         token = strtok(NULL, delimiter);
@@ -420,6 +421,8 @@ cell ** edit_command(char* parsedCommand[4], char mode){
         }
     }
     else {
+        blockRows = 3;
+        blockCols = 3;
         board = generate_empty_board();
     }
     markErrors = 1;
@@ -437,8 +440,8 @@ cell **solve_command(char* parsedCommand[4],char mode){
     fp = fopen(parsedCommand[1], "r");
     if (fp != NULL) {
         board = load_board(fp, mode);
-        print_board(board, mode);
         fclose(fp);
+        print_board(board, mode);
     } else {
         printf("Error: File doesn't exist or cannot be opened\n");
     }
