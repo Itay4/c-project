@@ -1,8 +1,6 @@
-#ifndef PARSER_H_
-#define PARSER_H_
+#ifndef SUDOKU90_PARSER_H
+#define SUDOKU90_PARSER_H
 
-#include <string.h>
+int parseCommand(char* command, char* parsedCommand[]);
 
-void parseCommand(char* command, char* parsedCommand[]);
-
-#endif /* PARSER_H_ */
+#endif /*SUDOKU90_PARSER_H*/
