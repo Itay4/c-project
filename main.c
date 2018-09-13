@@ -21,7 +21,7 @@ int main() {
     cell **startingBoard;
     list *movesList;
     int argsCounter, i;
-
+    srand(time(NULL));
     printf("Sudoku\n------\n");
     printf("Enter your command:\n");
 
