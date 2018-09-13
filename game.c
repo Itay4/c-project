@@ -698,26 +698,22 @@ bool fill_cell(cell** board, int column, int row){
     copyOfBoard = generate_empty_board();
     copy_board(board, copyOfBoard);
     numbersLeft = N;
-
     while (numbersLeft > 0){
         randomIndex = rand() % numbersLeft;
         nextNum = availableNumbers[randomIndex];
         if(valid_check(copyOfBoard, column + 1 ,row + 1, nextNum)){
             copyOfBoard[row][column].number = nextNum;
-            if (validate_risks(board,column + 1 ,row + 1 )){
-                board[row][column].number = nextNum;
-                copy_board(copyOfBoard, board);
-                free_board(copyOfBoard);
-                free(availableNumbers);
-                return true;
-            }
-            copyOfBoard[row][column].number = UNASSIGNED;
-            copyOfBoard[row][column].asterisk = false;
+            copy_board(copyOfBoard, board);
+            free_board(copyOfBoard);
+            free(availableNumbers);
+            return true;
         }
         copyOfBoard[row][column].number = UNASSIGNED;
         copyOfBoard[row][column].asterisk = false;
         numbersLeft--;
-        delFromArr(randomIndex, numbersLeft, availableNumbers);
+        if (numbersLeft > 0) {
+            delFromArr(randomIndex, numbersLeft, availableNumbers);
+        }
 }
     free_board(copyOfBoard);
     free(availableNumbers);
@@ -740,18 +736,21 @@ bool generate_randomized_solved_board (cell** board, int initialFullCells, int c
         return false;
     }
     while (triesLeft > 0) {
+
         if (cellsFilled < initialFullCells) {
             randCol = rand() % N;
             randRow = rand() % N;
-            if (!fill_cell(board, randCol, randRow)) {
-                triesLeft--;
-                empty_board(board);
-                cellsFilled = 0;
-            } else {
-                cellsFilled++;
+            if (board[randRow][randCol].number == UNASSIGNED) {
+                if (!fill_cell(board, randCol, randRow)) {
+                    triesLeft--;
+                    empty_board(board);
+                    cellsFilled = 0;
+                } else {
+                    cellsFilled++;
+                }
             }
         }
-        if (cellsFilled == initialFullCells) {
+        else if (cellsFilled == initialFullCells) {
             newBoard = generate_empty_board();
             solvable = ILP(board, newBoard);
             empty_board(board);

@@ -11,10 +11,21 @@ void delFromArr(int position, int numbersLeft, int* availableNumbers) {
     /*
      * Simulates deletion of elemnt in given position in array by shifting left elements
      */
-    int i;
-    for ( i = position - 1 ; i < numbersLeft - 1 ; i++ ) {
-        availableNumbers[i] = availableNumbers[i+1];
+
+    int i = 0;
+    int j;
+    int * tmpArray = malloc(numbersLeft * sizeof(int));
+    for ( j = 0; j < numbersLeft + 1; j++ ){
+        if (j != position) {
+            tmpArray[i] = availableNumbers[j];
+            i++;
+        }
     }
+    for ( j = 0; j < numbersLeft; j++ ){
+        availableNumbers[j] = tmpArray[j];
+        }
+
+    free(tmpArray);
 }
 
 void memory_error(char* func){
