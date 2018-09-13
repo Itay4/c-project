@@ -1,9 +1,8 @@
-
-#ifndef SUDOKU90_GAME_H
-#define SUDOKU90_GAME_H
 #include "linked_list.h"
 #include "main_aux.h"
 
+#ifndef GAME_H
+#define GAME_H
 
 
 cell **generate_empty_board();
@@ -26,7 +25,7 @@ bool valid_check(cell **board, int column, int row, int val);
 
 bool set(cell **board, int column, int row, int val, char mode);
 
-/*void validate(cell **board);*/
+void validate(cell **board);
 
 bool check_board_erroneous(cell **board);
 
@@ -54,5 +53,4 @@ void free_board(cell** board);
 
 void exit_game(char* command);
 
-
-#endif /*SUDOKU90_GAME_H*/
+#endif /* GAME_H */

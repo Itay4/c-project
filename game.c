@@ -1,4 +1,3 @@
-
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
@@ -95,7 +94,7 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
         }
         hint(board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
     } else if (strcmp(parsedCommand[0], "validate") == 0  && (mode == 'E' || mode == 'S')) {
-        /*validate(board);*/
+        validate(board);
     } else if ((strcmp(parsedCommand[0], "print_board") == 0) && (mode == 'E' || mode == 'S')) {
         print_board(board, mode);
     } else if (strcmp(parsedCommand[0], "mark_errors") == 0 && (mode == 'S')) {
@@ -178,11 +177,32 @@ void print_board(cell **board, char mode) {
     print_separator(N, blockRows);
 }
 
-void num_solutions(cell **board) {
-    int solutionsCounter = count_solutions(board);
-    /*int solutions_counter = count_solutions_rec(board, 0, 0, 0, *blockRows, *blockCols);*/
-    if (check_board_erroneous(board)){
+void validate(cell **board) {
+    /*
+     * Validates the sudoku board is solvable
+     */
+    cell **copyBoard;
+    int solvable;
+    /* if board contains erroneous values {
         printf("Error: board contains erroneous values\n");
+    }*/
+    copyBoard = duplicate_board(board);
+    solvable = 1;
+    solvable = ILP(board, copyBoard);
+
+    if (solvable == 1) {
+        printf("Validation passed: board is solvable\n");
+    } else {
+        printf("Validation failed: board is unsolvable\n");
+    }
+    freeBoard(copyBoard);
+}
+
+void num_solutions(cell **board) {
+    /* Counts the number of solutions of sudoku board */
+    int solutionsCounter = count_solutions(board);
+    if (check_board_erroneous(board)) {
+        printf(ERRONEOUS_ERROR);
     }
     printf("Number of solutions: %d\n", solutionsCounter);
     if (solutionsCounter == 1) {
@@ -192,130 +212,22 @@ void num_solutions(cell **board) {
     }
 }
 
-int count_solutions_rec(cell **board, int i, int j, int counter) {
-    /*
-     * Stack implementation
-     */
-    int N = blockRows * blockCols;
-    int k;
-    if (i == N) {
-        i = 0;
-        if (++j == N){
-            return 1 + counter;
-        }
-    }
-    if (board[i][j].number != 0){
-        return count_solutions_rec(board, i+1, j, counter);
-    }
-    for (k = 1; k <= N; ++k) {
-        if (valid_check(board, j, i, k)){
-            board[i][j].number = k;
-            counter = count_solutions_rec(board, i+1, j, counter);
-        }
-    }
-    board[i][j].number = 0;
-    return counter;
-}
+int count_solutions(cell** board) {
+    /* Helper function to count solutions of sudoku board */
+    int numOfSolutions;
+    int* unassignedsArray;
+    cell** boardCopy = generate_empty_board();
+    copy_board(board, boardCopy);
 
-int count_solutions(cell **board) {
-    /*
-    Stack implementation
-
-    */
-
-    int N = blockRows * blockCols;
-
-    int returnValue, value;
-
-    SnapShotStruct newSnapshot;
-
-    StackNode* snapshotStack;
-
-    SnapShotStruct currentSnapshot;
-    currentSnapshot.i = 0;
-    currentSnapshot.j = 0;
-    currentSnapshot.counter = 0;
-    currentSnapshot.stage = 0;
-    if (check_board_erroneous(board)) {
-        printf("Error: board contains erroneous values\n");
+    unassignedsArray = get_next_play(boardCopy);
+    if (unassignedsArray[0] == -1) {
+        free(unassignedsArray);
         return 0;
     }
-    push(&snapshotStack, currentSnapshot);
-
-    while (!empty(snapshotStack)) {
-        currentSnapshot=top(snapshotStack);
-        pop(&snapshotStack);
-        if (currentSnapshot.i == N){
-            currentSnapshot.i = 0;
-            if (++currentSnapshot.j == N) {
-                returnValue = currentSnapshot.counter + 1;
-                continue;
-            }
-        }
-        if (board[currentSnapshot.i][currentSnapshot.j].number != 0) {
-            newSnapshot.i = currentSnapshot.i + 1;
-            newSnapshot.j = currentSnapshot.j;
-            newSnapshot.counter = currentSnapshot.counter;
-            newSnapshot.stage = 0;
-            push(&snapshotStack, newSnapshot);
-            continue;
-        }
-        for (value = 1; value <= N; ++value) {
-            if (valid_check(board, currentSnapshot.j, currentSnapshot.i, value)){
-                board[currentSnapshot.i][currentSnapshot.j].number = value;
-                newSnapshot.i = currentSnapshot.i + 1;
-                newSnapshot.j = currentSnapshot.j;
-                newSnapshot.counter = currentSnapshot.counter;
-                newSnapshot.stage = 0;
-                push(&snapshotStack, newSnapshot);
-                continue;
-            }
-        }
-        board[currentSnapshot.i][currentSnapshot.j].number = 0;
-        /*switch (currentSnapshot.stage)
-        {
-        case 0:
-             if (currentSnapshot.i == N){
-                 currentSnapshot.i = 0;
-                 if (++currentSnapshot.j == N) {
-                     returnValue = 1 + currentSnapshot.counter;
-                     continue;
-                 }
-             }
-             if (board[currentSnapshot.i][currentSnapshot.j].number != 0) {
-                 newSnapshot.i = currentSnapshot.i + 1;
-                 newSnapshot.j = currentSnapshot.j;
-                 newSnapshot.counter = currentSnapshot.counter;
-                 newSnapshot.stage = 0;
-                 push(&snapshotStack, newSnapshot);
-                 continue;
-             }
-             for (value = 1; value <= N; ++value) {
-                 if (validCheck(board, currentSnapshot.j, currentSnapshot.i, value, numOfRows, numOfCols)){
-                     board[currentSnapshot.i][currentSnapshot.j].number = value;
-                     newSnapshot.i = currentSnapshot.i + 1;
-                     newSnapshot.j = currentSnapshot.j;
-                     newSnapshot.counter = currentSnapshot.counter;
-                     newSnapshot.stage = 0;
-                     push(&snapshotStack, newSnapshot);
-                     continue;
-                 }
-             }
-             currentSnapshot.stage = 1;
-             push(&snapshotStack, currentSnapshot);
-
-             break;
-        case 1:
-             newSnapshot.i = currentSnapshot.i + 1;
-             newSnapshot.j = currentSnapshot.j;
-             newSnapshot.counter = returnValue;
-             newSnapshot.stage = 0;
-             push(&snapshotStack, newSnapshot);
-             continue;
-             break;
-        }*/
-    }
-    return returnValue;
+    numOfSolutions = deterministic_backtrack(boardCopy, unassignedsArray[0], unassignedsArray[1]);
+    free_board(boardCopy);
+    free(unassignedsArray);
+    return numOfSolutions;
 }
 
 void save_command(cell **board, char *filePath,char mode) {
@@ -557,6 +469,7 @@ void game_over(cell **board){
      */
 }
 
+
 int auto_fill(cell **board)	{
     /*
      * Autofills cells which contain a single legal value
@@ -714,8 +627,7 @@ void hint(cell **board, int column, int row){
     else{
          hint = solvedBoard_[row-1][column-1].number;
         printf("Hint: set cell to %d\n", hint);
-        }
-        */
+        }*/
 }
 
 void free_board(cell** board){
