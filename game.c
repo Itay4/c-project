@@ -724,14 +724,14 @@ bool fill_cell(cell** board, int column, int row){
     return false;
 }
 
-bool generate_randomized_solved_board (cell** board, int initialFullCells, int finalFixedCells) {
+bool generate_randomized_solved_board (cell** board, int initialFullCells, int copyCells) {
     cell **newBoard;
     bool solvable;
     int randCol, randRow;
     int cellsFilled = 0;
     int triesLeft = 1000;
     int N = blockCols * blockRows;
-    if ((!valid_set_value(initialFullCells, N*N)) || (!valid_set_value(finalFixedCells, N*N))) {
+    if ((!valid_set_value(initialFullCells, N*N)) || (!valid_set_value(copyCells, N*N))) {
         printf(VALUE_RANGE_ERROR, N*N);
         return false;
     }
@@ -754,9 +754,9 @@ bool generate_randomized_solved_board (cell** board, int initialFullCells, int f
         if (cellsFilled == initialFullCells) {
             newBoard = generate_empty_board();
             solvable = ILP(board, newBoard);
+            empty_board(board);
             if (solvable) {
-                set_fixed_cells(newBoard, finalFixedCells);
-                generate_user_board(newBoard, board);
+                copy_random_cells(newBoard, copyCells, board);
                 free_board(newBoard);
                 print_board(board, 'E');
                 return true;

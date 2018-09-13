@@ -158,22 +158,21 @@ int deterministic_backtrack(cell** board, int i, int j) {
     return counter;
 }
 
-void set_fixed_cells(cell **board, int fixedCells) {
+void copy_random_cells(cell **solvedBoard, int copyCells, cell** finalBoard) {
     /*
-     * Randomly chooses given number of cells in the game board and sets them as fixed
+     * Randomly chooses given number of cells and unassign them.
      */
-    int i, randX, randY;
+    int i, colsIndex, rowsIndex;
     int N = blockCols * blockRows;
-    for (i = 0; i < fixedCells; i++){
+    for (i = 0; i < copyCells; i++){
         while (true) {
-            randX = rand() % N;
-            randY = rand() % N;
-            if (board[randY][randX].isFixed != true){
-                board[randY][randX].isFixed = true;
+            colsIndex = rand() % N;
+            rowsIndex = rand() % N;
+            if (finalBoard[rowsIndex][colsIndex].number == UNASSIGNED){
+                finalBoard[rowsIndex][colsIndex].number = solvedBoard[rowsIndex][colsIndex].number;
                 break;
             }
         }
-
     }
 }
 
@@ -428,25 +427,3 @@ bool ILP(cell **board, cell **solvedBoard) {
     return true;
 }
 
-void generate_user_board(cell** solved_board, cell** user_board) {
-/*
- * Generates unsolved user sudoku game board (copying only fixed cells)
- */
-    int i,j;
-    int N = blockRows  * blockCols;
-    for (i=0; i < N; i++) {
-        for (j=0; j < N; j++) {
-            if (solved_board[i][j].isFixed) {
-                user_board[i][j].number = solved_board[i][j].number;
-                user_board[i][j].isFixed = true;
-                user_board[i][j].asterisk =false;
-            }
-            else{
-                user_board[i][j].number = UNASSIGNED;
-                user_board[i][j].isFixed = false;
-                user_board[i][j].asterisk =false;
-            }
-        }
-    }
-
-}

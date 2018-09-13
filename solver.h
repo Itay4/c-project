@@ -6,9 +6,6 @@
 cell** duplicate_board(cell** oldBoard);
 int ILP(cell **b, cell **solvedBoard);
 int deterministic_backtrack(cell** board, int i, int j);
-void set_fixed_cells(cell **board, int fixedCells);
-void generate_user_board(cell** solved_board, cell** user_board);
-
-
+void copy_random_cells(cell **solvedBoard, int copyCells, cell** finalBoard);
 
 #endif /*SUDOKU90_SOLVER_H*/
