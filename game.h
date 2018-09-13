@@ -23,7 +23,7 @@ bool validCheck(cell **board, int column, int row, int val);
 
 int set(cell **board, int column, int row, int val, char mode);
 
-/*void validate(cell **board);*/
+void validate(cell **board);
 
 bool checkBoardErroneous(cell **board);
 void validateRisks(cell **board, int column, int row);

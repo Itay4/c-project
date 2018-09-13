@@ -55,7 +55,7 @@ void executeCommand(char *parsedCommand[4], cell **board, char* command, int cou
     } else if (strcmp(parsedCommand[0], "hint") == 0 && !gameOverFlag && counter == 3 && mode == 'S') {
         hint(board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
     } else if (strcmp(parsedCommand[0], "validate") == 0  && !gameOverFlag && (mode == 'E' || mode == 'S')) {
-        /*validate(board);*/
+        validate(board);
     } else if (strcmp(parsedCommand[0], "print_board") == 0 && (mode == 'E' || mode == 'S')) {
         printBoard(board);
     } else if (strcmp(parsedCommand[0], "mark_errors") == 0 && mode == 'S') {
@@ -146,6 +146,27 @@ void printBoard(cell **board) { /*update with mode- print always atrisk in edit*
         printf("|\n");
     }
     printSeperator(N, rows);
+}
+
+void validate(cell **board) {
+    /*
+     * Validates the sudoku board is solvable
+     */
+    cell **copyBoard;
+    int solvable;
+    /* if board contains erroneous values {
+        printf("Error: board contains erroneous values\n");
+    }*/
+    copyBoard = duplicate_board(board);
+    solvable = 1;
+    solvable = ILP(board, copyBoard);
+
+    if (solvable == 1) {
+        printf("Validation passed: board is solvable\n");
+    } else {
+        printf("Validation failed: board is unsolvable\n");
+    }
+    freeBoard(copyBoard);
 }
 
 void numSolutions(cell **board) {

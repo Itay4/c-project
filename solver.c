@@ -5,8 +5,7 @@
 #include "game.h"
 #include "stack.h"
 #include <string.h>
-#define UNUSED(x) (void)(x)
-
+#include "gurobi_c.h"
 
 typedef struct validPlays {
     int* validPlaysArray;
@@ -250,3 +249,255 @@ void generateSolvedBoard(cell** board, int fixedCells){
     }
     printBoard(user_board);
 }*/
+
+void send_error(int error, char* str, GRBenv* env){
+    printf("ERROR %d %s: %s\n", error, str, GRBgeterrormsg(env));
+}
+
+
+cell** prepare_board_for_gurobi(cell** board) {
+    /* Prepares board for Gurobi by fixing its values */
+    int i, j, N;
+    cell** resultBoard= generateEmptyBoard();
+    N = rows * cols;
+    for (i = 0; i < N; i++){
+        for (j = 0; j < N; j++){
+            resultBoard[i][j].number = get_actual_value(board, i, j);
+        }
+    }
+    return resultBoard;
+}
+
+int ILP(cell **board, cell **solvedBoard) {
+
+    cell **auxBoard; 
+    int *ind, n, m, N, error, count, i, j, p, t, v, optimstatus;
+    GRBenv   *env   = NULL;
+    GRBmodel *model = NULL;
+    double *lb, *val, objval, *sol;
+    char *vtype, **names, *namestorage, *cursor;
+
+    n = rows;
+    m = cols;
+    N = rows * cols;
+    error = 0;
+    auxBoard = prepare_board_for_gurobi(board);
+    names = (char**) calloc(N*N*N, sizeof(char*));
+    namestorage = (char*) calloc(20*N*N*N, sizeof(char));
+    ind = (int*) calloc(N*N*N, sizeof(int));
+    val = (double*) calloc(N*N*N, sizeof(double));
+    lb = (double*) calloc(N*N*N, sizeof(double));
+    vtype = (char*) calloc(N*N*N, sizeof(char));
+    sol = (double*) calloc(N*N*N, sizeof(double));
+    
+    /* Create an empty model */
+
+    cursor = namestorage;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            for (v = 0; v < N; v++) {
+                if(auxBoard[i][j].number == (v+1)){
+                    lb[i*N*N+j*N+v] = 1;
+                } else {
+                    lb[i*N*N+j*N+v] = 0;
+                }
+                vtype[i*N*N+j*N+v] = GRB_BINARY;
+                names[i*N*N+j*N+v] = cursor;
+                sprintf(names[i*N*N+j*N+v], "x[%d,%d,%d]", i, j, v+1);
+                cursor += strlen(names[i*N*N+j*N+v]) + 1;
+            }
+        }
+    }
+
+    /* Create environment */
+
+    error = GRBloadenv(&env, "sudoku.log");
+    
+    if (error) {
+        #ifdef PRINT_GUROBI_ERRORS
+        send_error(error, "GRBloadenv", env); 
+        #endif
+        return 0;
+        }
+    
+    /* Removes Gurobi prints */
+    
+    error = GRBsetintparam(env, "OutputFlag", 0);
+    if (error) {
+        #ifdef PRINT_GUROBI_ERRORS
+        send_error(error, "GRBsetintparam or GRBgetenv", env);
+        #endif
+        return 0;
+    }
+  
+    /* Create new model */
+
+    error = GRBnewmodel(env, &model, "sudoku", N*N*N, NULL, lb, NULL, vtype, names);
+    if (error) {
+        #ifdef PRINT_GUROBI_ERRORS
+        send_error(error, "GRBnewmodel", env);
+        #endif
+        return 0;
+    }
+    
+    
+    /* Each cell gets a value */
+
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            for (v = 0; v < N; v++) {
+                ind[v] = i*N*N + j*N + v;
+                val[v] = 1.0;
+            }
+            
+            error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
+            if (error) {
+                #ifdef PRINT_GUROBI_ERRORS
+                send_error(error, "GRBaddconstr1", env); 
+                #endif
+                return 0;
+            }
+        }
+    }
+
+    /* Each value must appear once in each row */
+
+    for (v = 0; v < N; v++) {
+        for (j = 0; j < N; j++) {
+            for (i = 0; i < N; i++) {
+                ind[i] = i*N*N + j*N + v;
+                val[i] = 1.0;
+            }
+            
+            error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
+            if (error) {
+                #ifdef PRINT_GUROBI_ERRORS
+                send_error(error, "GRBaddconstr2", env);
+                #endif
+                return 0;
+            }
+        }
+    }
+
+    /* Each value must appear once in each column */
+
+    for (v = 0; v < N; v++) {
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                ind[j] = i*N*N + j*N + v;
+                val[j] = 1.0;
+            }
+
+            error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
+            if (error) {
+                #ifdef PRINT_GUROBI_ERRORS
+                send_error(error, "GRBaddconstr3", env);
+                #endif
+                return 0;
+            }
+        }
+    }
+
+    /* Each value must appear once in each subgrid */
+
+    for (v = 0; v < N; v++) {
+        for (p = 0; p < m; p++) {
+            for (t = 0; t < n; t++) {
+                count = 0;
+                for (i = p*n; i < (p+1)*n; i++) {
+                    for (j = t*m; j < (t+1)*m; j++) {
+                        ind[count] = i*N*N + j*N + v;
+                        val[count] = 1.0;
+                        count++;
+                    }
+                }
+                
+                error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
+                if (error) {
+                    #ifdef PRINT_GUROBI_ERRORS
+                    send_error(error, "GRBaddconstr4", env);
+                    #endif
+                    return 0;
+                }
+            }
+        }
+    }
+    
+    /* Optimize model */
+
+    error = GRBoptimize(model);
+    if (error) {
+        #ifdef PRINT_GUROBI_ERRORS
+        send_error(error, "GRBoptimize", env);
+        #endif
+        return 0;
+    }   
+
+    /* Capture solution information */
+
+    error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
+    if (error) {
+        #ifdef PRINT_GUROBI_ERRORS
+        send_error(error, "GRBgetintattr", env);
+        #endif
+        return 0;
+    }
+    
+    error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
+    if (error) {
+        #ifdef PRINT_GUROBI_ERRORS
+        send_error(error, "GRBgetdblattr", env);
+        #endif
+        return 0;
+    }
+    
+    
+    error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, N*N*N, sol);   
+    if (error) {
+        #ifdef PRINT_GUROBI_ERRORS
+        send_error(error, "GRBgetdblattrarray", env);
+        #endif
+        return 0;
+    }
+    
+    #ifdef PRINT_GUROBI_ERRORS
+    printf("\nOptimization complete\n");
+    #endif
+
+    if (optimstatus == GRB_OPTIMAL) {
+        #ifdef PRINT_GUROBI_ERRORS
+        printf("Optimal objective function: %.4e\n", objval);       
+        #endif
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                for (v = 0; v < N; v++) {
+                    if (sol[i*N*N + j*N + v] != 0) {     
+                        solvedBoard[i][j].number = v+1;
+                    }
+                }
+            }
+        }
+    } else {
+        if(optimstatus == GRB_INF_OR_UNBD){
+            #ifdef PRINT_GUROBI_ERRORS
+            printf("Model is infeasible or unbounded\n");
+            #endif
+        } else {
+            #ifdef PRINT_GUROBI_ERRORS
+            printf("Optimization was stopped early\n");
+            #endif
+        }
+    }
+
+    /* Free Resources */
+    free(ind); 
+    free(val); 
+    free(lb); 
+    free(vtype); 
+    free(sol); 
+    free(names); 
+    free(namestorage);
+    GRBfreemodel(model);
+    GRBfreeenv(env);
+    return 1;
+}
