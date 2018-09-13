@@ -1,4 +1,3 @@
-
 #include "main_aux.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -62,4 +61,23 @@ bool valid_set_value(int val, int N){
         return false;
     }
     return true;
+}
+
+int* get_next_play(cell** board) {
+    /* Returns an array representing next empty unassigned cell position */
+    int* auxArray = (int*) calloc(2, sizeof(int));
+    int i, j, N;
+    auxArray[0] = -1;
+    auxArray[1] = -1;
+    N = blockRows * blockCols;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            if (board[i][j].number == 0) {
+                auxArray[0] = i;
+                auxArray[1] = j;
+                return auxArray;
+            }
+        }
+    }
+    return auxArray;
 }
