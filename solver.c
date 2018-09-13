@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 #include "main_aux.h"
 #include "game.h"
 #include "stack.h"
@@ -12,7 +13,7 @@ typedef struct validPlays {
     int numOfPlays;
 } validPlays;
 
-bool recursiveBacktrack(cell** board, int row, int column) {
+bool recursive_backtrack(cell** board, int row, int column) {
     /*
      * Recursive backtrack to solve sudoku board
      */
@@ -27,14 +28,14 @@ bool recursiveBacktrack(cell** board, int row, int column) {
     /* If cell number is already set, no need to change and recruse to next cell */
     if (board[row][column].number) {
         if (column == 8) {
-            if (recursiveBacktrack(board, row+1, 0)) return true;
+            if (recursive_backtrack(board, row+1, 0)) return true;
         } else {
-            if (recursiveBacktrack(board, row, column+1)) return true;
+            if (recursive_backtrack(board, row, column+1)) return true;
         }
         return false;
     }
     for (i = 1; i < 10; i++){
-        if (validCheck(board, column, row, i)) {
+        if (valid_check(board, column, row, i)) {
             availableNumbers[j] = i;
             j++;}
     }
@@ -46,12 +47,12 @@ bool recursiveBacktrack(cell** board, int row, int column) {
             nextNum = availableNumbers[randomIndex];
         }
         board[row][column].number = nextNum;
-        delFromArr(randomIndex + 1, j, availableNumbers);
+        del_from_arr(randomIndex + 1, j, availableNumbers);
         j--;
         if (column == 8) {
-            if (recursiveBacktrack(board, row + 1, 0)) return true;
+            if (recursive_backtrack(board, row + 1, 0)) return true;
         } else {
-            if (recursiveBacktrack(board, row, column + 1)) return true;
+            if (recursive_backtrack(board, row, column + 1)) return true;
         }
         board[row][column].number = 0;
 
@@ -204,7 +205,7 @@ int deterministic_backtrack(cell** board, int i, int j) {
     return counter;
 }
 
-void setFixedCells(cell **board, int fixedCells) {
+void set_fixed_cells(cell **board, int fixedCells) {
     /*
      * Randomly chooses given number of cells in the game board and sets them as fixed
      */
@@ -222,15 +223,15 @@ void setFixedCells(cell **board, int fixedCells) {
     }
 }
 
-void generateSolvedBoard(cell** board, int fixedCells){
+void generate_solved_board(cell** board, int fixedCells){
     /*
      * Generates solved sudoku game board
      */
-    recursiveBacktrack(board, 0, 0);
-    setFixedCells(board, fixedCells);
+    recursive_backtrack(board, 0, 0);
+    set_fixed_cells(board, fixedCells);
 }
 
-/*void generateUserBoard(cell solved_board[NUM_OF_ROWS][NUM_OF_COLUMNS], cell user_board[NUM_OF_ROWS][NUM_OF_COLUMNS]) {
+/*void generate_user_board(cell **solved_board, cell** user_board) {
 
      * Generates unsolved user sudoku game board
 

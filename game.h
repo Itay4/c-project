@@ -1,49 +1,56 @@
+#include "linked_list.h"
+#include "main_aux.h"
 
 #ifndef GAME_H
 #define GAME_H
-#include "linked_list.h"
 
-cell **generateEmptyBoard();
 
-/*void initializeBoard(cell board[NUM_OF_ROWS][NUM_OF_COLUMNS]);*/
+cell **generate_empty_board();
 
-void printBoard(cell **board);
+void copy_board(cell **source_board, cell **new_board);
 
-void executeCommand(char *parsedCommand[4], cell **board, char* command, int counter, char mode, list *lst);
+void print_board(cell **board, char mode);
 
-void gameOver(cell **board);
+void execute_command(char *parsedCommand[4], cell **board, char* command, int counter, char mode, list *lst);
 
-bool valInColumn(cell **board, int column, int row, int val);
+void game_over(cell **board);
 
-bool valInRow(cell **board, int column, int row, int val);
+bool val_in_column(cell **board, int column, int row, int val);
 
-bool valInBlock(cell **board, int column, int row, int val);
+bool val_in_row(cell **board, int column, int row, int val);
 
-bool validCheck(cell **board, int column, int row, int val);
+bool val_in_block(cell **board, int column, int row, int val);
 
-int set(cell **board, int column, int row, int val, char mode);
+bool valid_check(cell **board, int column, int row, int val);
+
+bool set(cell **board, int column, int row, int val, char mode);
 
 void validate(cell **board);
 
-bool checkBoardErroneous(cell **board);
-void validateRisks(cell **board, int column, int row);
-int setInSolveMode(cell **board, int column, int row, int val);
-int setInEditMode(cell **board, int column, int row, int val);
+bool check_board_erroneous(cell **board);
+
+void validate_risks(cell **board, int column, int row);
 
 void hint(cell **board, int column, int row);
 
-cell **solveCommand(char* parsedCommand[4], char mode);
+cell **solve_command(char* parsedCommand[4], char mode);
 
-cell **editCommand(char* parsedCommand[4], char mode);
+cell **edit_command(char* parsedCommand[4], char mode);
 
-void markErrorsCommand(char* value);
+void mark_errors_command(int value);
 
-void saveCommand(cell **board, char *filePath, char mode);
+void save_command(cell **board, char *filePath, char mode);
 
-int autoFill(cell **board);
+bool auto_fill(cell **board);
 
-void numSolutions(cell **board);
+void num_solutions(cell **board);
 
-int countSolutions(cell **board);
+int count_solutions(cell **board);
+
+int count_solutions_rec(cell **board, int i, int j, int counter);
+
+void free_board(cell** board);
+
+void exit_game(char* command);
 
 #endif /* GAME_H */
