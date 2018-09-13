@@ -1,504 +1,650 @@
+#define _GNU_SOURCE
 #include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 #include "main_aux.h"
+#include "parser.h"
+#include "solver.h"
 #include "game.h"
 #include "stack.h"
-#include <string.h>
-#include "gurobi_c.h"
+#include "linked_list.h"
+#include <unistd.h>
 
-typedef struct validPlays {
-    int* validPlaysArray;
-    int numOfPlays;
-} validPlays;
+extern int blockRows;
+extern int blockCols;
+extern int markErrors;
 
-bool recursive_backtrack(cell** board, int row, int column) {
+
+cell** generate_empty_board(){
+    int i, j, N;
+    cell **board = NULL;
+    N =  blockRows * blockCols;
+    board = calloc(N, sizeof (*board));
+    for (i = 0; i < N; i++) {
+        board[i] = calloc(N, sizeof (**board));
+    }
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            board[i][j].number = UNASSIGNED;
+            board[i][j].isFixed = false;
+            board[i][j].asterisk = false;
+        }
+    }
+    return board;
+}
+
+void copy_board(cell **source_board, cell **new_board){
     /*
-     * Recursive backtrack to solve sudoku board
+     * Copying source sudoku board to new sudoku board.
      */
-    int nextNum, i, j;
-    int randomIndex;
-    int availableNumbers[9];
-    j = 0;
-    if (row == 9) {
+    int i,j;
+    int N = blockRows * blockCols;
+
+
+    for (i=0; i < N; i++) {
+        for (j=0; j < N; j++){
+            /*printf("I: %d, J: %d\n", i, j);*/
+
+            new_board[i][j].number = source_board[i][j].number;
+            new_board[i][j].asterisk = source_board[i][j].asterisk;
+            new_board[i][j].isFixed = source_board[i][j].isFixed;
+
+        }
+    }
+}
+
+void mark_asterisks(cell **board) {
+    int i, j;
+    int N = blockCols * blockRows;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            if (board[i][j].number != 0) {
+                valid_check(board, j + 1, i + 1, board[i][j].number);
+            }
+        }
+    }
+}
+
+void execute_command(char *parsedCommand[4], cell **board, char* command, int counter, char mode, list *lst){
+    /*
+     * Evaluates game command (SET/HINT/VALIDATE/RESTART/EXIT) and calls the relavent function to execute it
+     */
+    /*TODO: missing generate X Y (add when ILP done)*/
+    int setFlag = 0;
+    int fillFlag = 0;
+    cell ** boardAfter;
+    if (strcmp(parsedCommand[0], "set") == 0 && counter == 4 && (mode == 'E' || mode == 'S')) {
+        if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2])) || (!is_integer(parsedCommand[3]))){
+            printf(VALUE_RANGE_ERROR, blockCols * blockRows);
+            return;
+        }
+        setFlag = set(board, atoi(parsedCommand[1]),atoi(parsedCommand[2]), atoi(parsedCommand[3]), mode);
+        if (setFlag) {
+            boardAfter = generate_empty_board(blockRows, blockCols);
+            copy_board(board, boardAfter);
+            insert_at_tail(boardAfter, lst);
+        }
+    } else if (strcmp(parsedCommand[0], "hint") == 0 &&  counter == 3 && mode == 'S') {
+        if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2]))){
+            printf(VALUE_RANGE_ERROR, blockCols*blockRows);
+            return;
+        }
+        hint(board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
+    } else if (strcmp(parsedCommand[0], "validate") == 0  && (mode == 'E' || mode == 'S')) {
+        validate(board);
+    } else if ((strcmp(parsedCommand[0], "print_board") == 0) && (mode == 'E' || mode == 'S')) {
+        print_board(board, mode);
+    } else if (strcmp(parsedCommand[0], "mark_errors") == 0 && (mode == 'S')) {
+        if (!is_integer(parsedCommand[1])) {
+            printf(MARK_ERROR_ERROR);
+            return;
+        }
+        mark_errors_command(atoi(parsedCommand[1]));
+    } else if (strcmp(parsedCommand[0], "autofill") == 0 && mode == 'S') {
+        fillFlag = auto_fill(board);
+        if (fillFlag) {
+            boardAfter = generate_empty_board();
+            copy_board(board, boardAfter);
+            insert_at_tail(boardAfter, lst);
+        }
+    } else if (strcmp(parsedCommand[0], "save") == 0 && (mode == 'E' || mode == 'S')) {
+        save_command(board, parsedCommand[1], mode);
+    } else if (strcmp(parsedCommand[0], "num_solutions") == 0 && (mode == 'E' || mode == 'S')) {
+        num_solutions(board);
+    } else if (((strcmp(parsedCommand[0], "undo") == 0)) && (mode == 'E' || mode == 'S')) {
+        undo(lst, board, mode);
+    } else if (((strcmp(parsedCommand[0], "redo") == 0)) && (mode == 'E' || mode == 'S')) {
+        redo(lst, board, mode);
+    } else if (((strcmp(parsedCommand[0], "reset") == 0)) && (mode == 'E' || mode == 'S')) {
+        reset(lst, board, mode);
+    } else if (strcmp(parsedCommand[0], "exit") == 0) {
+        free_board(board);
+        free_list(lst);
+        exit_game(command);
+    } else {
+        printf(INVALID_ERROR);
+    }
+}
+
+void print_separator(int N, int m) {
+    /*
+     * Helper function to printBoard() which prints block separators
+     */
+    char dash = '-';
+    int i;
+    int count = 4 * N + m + 1;
+    for (i = 0; i < count; i++) {
+        putchar(dash);
+    }
+    putchar('\n');
+}
+
+void print_board(cell **board, char mode) {
+    /*
+     * Prints the sudoku board according to the format
+     */
+    int i,j;
+    int N = blockRows * blockCols;
+    for (i = 0; i < N; i++) {
+        if (i % blockRows == 0){
+            print_separator(N, blockRows);
+        }
+        for (j=0; j < N; j++) {
+            if (j % blockCols == 0) {
+                printf("|");
+            }
+            printf(" ");
+            if (board[i][j].isFixed) {
+                printf("%2d", board[i][j].number);
+                printf(".");
+            }
+            else if ((board[i][j].asterisk) && (markErrors || mode == 'E')) {
+                printf("%2d", board[i][j].number);
+                printf("*");
+            }
+            else if (board[i][j].number != UNASSIGNED){
+                printf("%2d ", board[i][j].number);
+            }
+            else{ /*printing blank spaces for UNASSIGNED*/
+                printf("   ");
+            }
+        }
+        printf("|\n");
+    }
+    print_separator(N, blockRows);
+}
+
+void validate(cell **board) {
+    /*
+     * Validates the sudoku board is solvable
+     */
+    cell **copyBoard;
+    int solvable;
+    /* if board contains erroneous values {
+        printf("Error: board contains erroneous values\n");
+    }*/
+    copyBoard = duplicate_board(board);
+    solvable = 1;
+    solvable = ILP(board, copyBoard);
+
+    if (solvable == 1) {
+        printf("Validation passed: board is solvable\n");
+    } else {
+        printf("Validation failed: board is unsolvable\n");
+    }
+    free_board(copyBoard);
+}
+
+void num_solutions(cell **board) {
+    /* Counts the number of solutions of sudoku board */
+    int solutionsCounter = count_solutions(board);
+    if (check_board_erroneous(board)) {
+        printf(ERRONEOUS_ERROR);
+    }
+    printf("Number of solutions: %d\n", solutionsCounter);
+    if (solutionsCounter == 1) {
+        printf("This is a good board!\n");
+    } else if (solutionsCounter > 1) {
+        printf("The puzzle has more than 1 solution, try to edit it further\n");
+    }
+}
+
+int count_solutions(cell** board) {
+    /* Helper function to count solutions of sudoku board */
+    int numOfSolutions;
+    int* unassignedsArray;
+    cell** boardCopy = generate_empty_board();
+    copy_board(board, boardCopy);
+
+    unassignedsArray = get_next_play(boardCopy);
+    if (unassignedsArray[0] == -1) {
+        free(unassignedsArray);
+        return 0;
+    }
+    numOfSolutions = deterministic_backtrack(boardCopy, unassignedsArray[0], unassignedsArray[1]);
+    free_board(boardCopy);
+    free(unassignedsArray);
+    return numOfSolutions;
+}
+
+void save_command(cell **board, char *filePath,char mode) {
+    /*
+    TODO: remove remarks... waiting for validate
+    */
+
+    FILE *fp;
+    int i, j, N;
+
+    if (mode == 'E') {
+        if (check_board_erroneous(board)) {
+            printf(ERRONEOUS_ERROR);
+            return;
+        }
+      /*
+        else if (validate(board) == false) {
+            printf(VALIDATION_ERROR);
+            return;
+      }
+        */
+    }
+
+    if ((fp = fopen(filePath, "wb")) == NULL) {
+        printf("Error: File cannot be created or modified\n");
+    }
+
+    fprintf(fp, "%d %d\n", blockRows, blockCols);
+    N = blockRows * blockCols;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            fprintf(fp, "%d", board[i][j].number);
+            if ((board[i][j].isFixed || mode == 'E') && (board[i][j].number != UNASSIGNED)) {
+                fprintf(fp, ".");
+            }
+            fprintf(fp, " ");
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
+    printf("Saved to: %s\n", filePath);
+}
+
+void mark_errors_command(int value) {
+    if (value == 0) {
+        markErrors = 0;
+    } else if (value == 1) {
+        markErrors = 1;
+
+    }
+}
+
+cell **load_board(FILE* fp, char mode){/*add char mode- in edit need to clear all fixed*/
+    int i, j, N;
+    cell **board = NULL;
+    char line[257];
+    char *token;
+    char *delimiter = " \t\r\n";
+    if (fgets(line, 257, fp) != NULL){
+
+        token = strtok(line, delimiter);
+        blockRows = atoi(token);
+        token = strtok(NULL, delimiter);
+        blockCols = atoi(token);
+    }
+    N = blockRows * blockCols;
+    board = calloc(N, sizeof (*board));
+    for (i = 0; i < N; i++) {
+        board[i] = calloc(N, (sizeof **board));
+    }
+    for (i = 0; i < N; i++) {
+        fgets(line, 256, fp);
+        token = strtok(line, delimiter);
+        for (j = 0; j < N; j++) {
+            board[i][j].number = token[0] - '0';
+            if ((token[1] == '.') && (mode == 'S')) {
+                    board[i][j].isFixed = true;
+            }
+            else if (token[1] == '*') {
+                board[i][j].asterisk = true;
+                }
+            token = strtok(NULL, delimiter);
+        }
+    }
+    mark_asterisks(board);
+    return board;
+}
+
+
+
+cell ** edit_command(char* parsedCommand[4], char mode){
+    cell **board = NULL;
+    FILE* fp = NULL;
+    if (parsedCommand[1] != '\0'){
+        fp = fopen(parsedCommand[1], "r");
+        if (fp != NULL) {
+            board = load_board(fp, mode);
+            fclose(fp);
+        }
+        else {
+            printf("Error: File cannot be opened\n");
+            return board;
+        }
+    } else {
+        blockRows = 3;
+        blockCols = 3;
+        board = generate_empty_board();
+    }
+    markErrors = 1;
+    print_board(board, mode);
+    return board;
+}
+
+cell **solve_command(char* parsedCommand[4],char mode){
+    cell **board = NULL;
+    FILE* fp = NULL;
+    if (parsedCommand[1] == '\0'){
+        printf(INVALID_ERROR);
+        return board;
+    }
+    fp = fopen(parsedCommand[1], "r");
+    if (fp != NULL) {
+        board = load_board(fp, mode);
+        fclose(fp);
+        print_board(board, mode);
+    } else {
+        printf("Error: File doesn't exist or cannot be opened\n");
+    }
+    return board;
+}
+
+
+bool val_in_block(cell **board, int column, int row, int val){
+    /*
+     * Checks if value exist in the block containing given row and column
+     */
+
+    bool valExist = false;
+    int initialCol, initialRow, colIndex, rowIndex;
+    initialCol = get_block_col_index(column);
+    initialRow = get_block_row_index(row);
+    for (colIndex = initialCol; (colIndex < blockCols + initialCol); colIndex++) {
+        for (rowIndex = initialRow; (rowIndex < blockRows + initialRow); rowIndex++) {
+            if((colIndex == column - 1) && (rowIndex == row - 1)) { /*not checking cell to be changed*/}
+            else if (board[rowIndex][colIndex].number == val) {
+                board[rowIndex][colIndex].asterisk= true;
+                valExist = true;
+            }
+        }
+    }
+    return valExist;
+}
+
+bool val_in_row(cell **board, int column, int row, int val){
+    /*
+     * Checks if value exist in the given row
+     */
+
+    int N = blockRows * blockCols;
+    bool valExist = false;
+    int colIndex;
+    for (colIndex = 0; colIndex < N; colIndex++) {
+        if(colIndex == column - 1) {/* not checking cell to be changed*/}
+        else if (board[row - 1][colIndex].number == val) {
+            valExist = true;
+            if (board[row - 1][colIndex].isFixed == false) {
+                board[row - 1][colIndex].asterisk = true;
+            }
+        }
+    }
+    return valExist;
+}
+
+bool val_in_column(cell **board, int column, int row, int val) {
+    /*
+     * Checks if value exist in the given column
+     */
+    int N = blockRows * blockCols;
+    bool valExist = false;
+    int rowIndex;
+    for (rowIndex = 0; rowIndex < N; rowIndex++) {
+        if(rowIndex == row - 1){/*not checking cell to be changed*/}
+        else if (board[rowIndex][column - 1].number == val) {
+            valExist = true;
+            if (board[rowIndex][column - 1].isFixed == false) {
+                board[rowIndex][column - 1].asterisk = true;
+            }
+        }
+    }
+    return valExist;
+}
+
+bool valid_check(cell **board, int column, int row, int val) {
+    /*
+     * Checks if validation of given value in cell <row,column> according to sudoku rules
+     * marks aserisks
+     */
+
+    if(val_in_block(board, column, row, val) | val_in_row(board, column, row, val) | val_in_column(board, column, row, val)){
+        board[row - 1][column - 1].asterisk = true;
+        return false;
+    }
+    else{
+        board[row - 1][column - 1].asterisk = false;
         return true;
     }
 
-    /* If cell number is already set, no need to change and recruse to next cell */
-    if (board[row][column].number) {
-        if (column == 8) {
-            if (recursive_backtrack(board, row+1, 0)) return true;
-        } else {
-            if (recursive_backtrack(board, row, column+1)) return true;
+}
+
+void game_over(cell **board){
+    /*
+     * Checks if board is full and solved correctly
+     */
+    /*TODO: validaeion with ILP*/
+
+    int col, row;
+    /*bool full = true;*/
+    if (check_board_erroneous(board)){
+        return;
+    }
+        for (col = 0; col < NUM_OF_COLUMNS; col++) {
+        for (row = 0; row < NUM_OF_ROWS; row++) {
+            if (board[row][col].number == UNASSIGNED) {
+                /*full = false;*/
+            }
         }
+    }
+    /*
+    if (full){
+        if validate(board){
+            printf(GAME_OVER);
+            mode = 'I';
+        }
+    else{
+     printf("Puzzle solution erroneous\n");
+
+    }
+     */
+}
+
+
+int auto_fill(cell **board)	{
+    /*
+     * Autofills cells which contain a single legal value
+
+     */
+    int i, j, k, candidate;
+    int fillFlag = false;
+    int numOfCandidates = 0;
+    int maxValue = blockRows * blockCols + 1;
+    cell **copyOfBoard;
+    int N = blockRows * blockCols;
+    if (check_board_erroneous(board)){
+        printf("Error: board contains erroneous values\n");
         return false;
     }
-    for (i = 1; i < 10; i++){
-        if (valid_check(board, column, row, i)) {
-            availableNumbers[j] = i;
-            j++;}
-    }
-    while (j > 0) {
-        if (j==1) { 
-            nextNum = availableNumbers[0];
-        } else {
-            randomIndex = rand() % j;
-            nextNum = availableNumbers[randomIndex];
-        }
-        board[row][column].number = nextNum;
-        del_from_arr(randomIndex + 1, j, availableNumbers);
-        j--;
-        if (column == 8) {
-            if (recursive_backtrack(board, row + 1, 0)) return true;
-        } else {
-            if (recursive_backtrack(board, row, column + 1)) return true;
-        }
-        board[row][column].number = 0;
+    copyOfBoard = generate_empty_board();
+    copy_board(board, copyOfBoard);
+    for (i = 0; i < N; i++){
+        for (j = 0; j < N; j++){
+            if (copyOfBoard[i][j].number == UNASSIGNED){
+                for (k = 1; k < maxValue; k++){
+                    if (valid_check(copyOfBoard, j + 1, i + 1, k)){
+                        candidate = k;
+                        numOfCandidates++;
+                    }
+                }
+                if (numOfCandidates == 1){
+                    board[i][j].number = candidate;
+                    validate_risks(board, j + 1, i + 1);
+                    fillFlag = true;
+                    printf("Cell <%d,%d> set to %d\n", (j+1), (i+1), candidate);
+                }
+                numOfCandidates = 0;
+            }
 
+        }
+    }
+    print_board(board, 'E');
+    game_over(board);
+    return fillFlag;
+}
+
+void validate_risks(cell **board, int column, int row) {
+    int initialCol, initialRow, colIndex, rowIndex;
+    int N = blockRows * blockCols;
+    initialCol = get_block_col_index(column);
+    initialRow = get_block_row_index(row);
+    for (colIndex = initialCol; (colIndex < blockCols + initialCol); colIndex++) { /*block*/
+        for (rowIndex = initialRow; (rowIndex < blockRows + initialRow); rowIndex++) {
+            if (colIndex == (column-1) && rowIndex == (row-1)) {
+                /*not checking cell to be changed*/
+            }
+            else if (board[rowIndex][colIndex].asterisk){
+                if(valid_check(board, colIndex + 1, rowIndex + 1, board[rowIndex][colIndex].number)){
+                    board[rowIndex][colIndex].asterisk = false;
+                }
+            }
+        }
+    }
+    for (colIndex = 0; (colIndex < N); colIndex++) { /*row*/
+        if (colIndex == column - 1) {
+        }
+        else if (board[row - 1][colIndex].asterisk){
+            if (valid_check(board, colIndex + 1, row, board[row - 1][colIndex].number)){
+                board[row - 1][colIndex].asterisk = false;
+            }
+        }
+    }
+
+    for (rowIndex = 0; (rowIndex < N); rowIndex++) {  /*col*/
+        if (rowIndex == row - 1){
+        }
+        else if (board[rowIndex][column - 1].asterisk){
+            if( valid_check(board, column , rowIndex + 1, board[rowIndex][column - 1].number)){
+                board[rowIndex][column - 1].asterisk = false;
+            }
+        }
+    }
+}
+
+
+bool set(cell **board, int column, int row, int val, char mode) {
+    int N = blockRows * blockCols;
+    if((!valid_board_index(column, N)) || (!valid_board_index(row, N)) || (!valid_set_value(val, N))){
+        printf(VALUE_RANGE_ERROR, blockCols * blockRows);
+        return false;
+    }
+     if (board[row - 1][column - 1].isFixed) {
+        printf(FIXED_ERROR);
+        return false;
+     }
+     else if (board[row - 1][column - 1].number == val) {
+         print_board(board, mode);
+         return  false;
+    }
+    else if (val == 0) {
+        board[row - 1][column - 1].number = UNASSIGNED;
+        board[row - 1][column - 1].asterisk = false;
+        validate_risks(board, column, row);
+        print_board(board, mode);
+        return true;
+    }
+    else {
+        valid_check(board, column, row, val); /*make valid check to updated astrisk*/
+        board[row - 1][column - 1].number = val;
+        validate_risks(board, column, row);
+        print_board(board, mode);
+        if (mode == 'S'){
+            game_over(board);
+        }
+
+        return true;
+    }
+}
+
+bool check_board_erroneous(cell **board){
+    int colIndex, rowIndex = 0;
+    int N = blockRows * blockCols;
+    for (rowIndex = 0; rowIndex < N; rowIndex++) {
+        for (colIndex = 0; colIndex < N; colIndex++) {
+            if (board[rowIndex][colIndex].asterisk) {
+                return true;
+            }
+        }
     }
     return false;
 }
 
-int get_actual_value(cell** board, int i, int j) {
-    /* Gets the actual value of cell */
-    int value = board[i][j].number;
+void hint(cell **board, int column, int row){
+    /*
+     * Prints the value of the cell <row,column> on the last solved sudoku board
+     */
+
+    /* TODO: after ILP solver working unmark code */
+
+    /* int hint;
+    cell **solvedBoard = NULL; */
+    if (check_board_erroneous(board)) {
+        printf("Error: board contains erroneous values\n");
+        return;
+    }
+    if (board[row - 1][column - 1].isFixed) {
+        printf(FIXED_ERROR);
+        return;;
+    }
+    if (board[row - 1][column - 1].number == 0) {
+        printf("Error: cell already contains a value\n");
+        return;
+    }
+    /*solvedBoard = validate(board)
+      if (solvedBoard == NULL){
+      printf("Error: board is unsolvable\n");
+      return;
+      }
+    else{
+         hint = solvedBoard_[row-1][column-1].number;
+        printf("Hint: set cell to %d\n", hint);
+        }*/
+}
+
+void free_board(cell** board){
+    int i;
     int N = blockRows * blockCols;
-    if (value < 0) {
-        value = value * (-1);
-    }
-    if (value > N) { 
-        value = value - N;
-    }
-    return value;
-}
-
-validPlays* get_valid_plays(cell** board, int i, int j) {
-
-    int* plays;
-    int* legalPlays;
-    int counter, k, l, roundI, roundJ, value, N;
-    validPlays* result;
-
-    N = blockRows * blockCols;
-    counter = 0;
-    plays = calloc(N+1, sizeof(int));
-    for (k = 0; k < N; k++) {
-        value = get_actual_value(board, k, j);
-        if (value != 0) {
-            plays[value] = 1;
-        }
-    }
-    for (k = 0; k < N; k++) {
-        value = get_actual_value(board, i, k);
-        if (value != 0) {
-            plays[value] = 1;
-        }
-    }
-
-    roundI = i/blockRows;
-    roundJ = j/blockCols;
-    for (k = blockRows*roundI; k < blockRows*(roundI)+blockRows; k++){
-        for(l = blockCols*roundJ; l<blockCols+blockCols*roundJ; l++) {
-            value = get_actual_value(board, k, l);
-            if (value != 0) {
-            plays[value] = 1;
-            }
-        }
-    }
-    for (k = 1; k < N+1; k++) {
-        if (plays[k] == 0) {
-            counter++;
-        }
-    }
-    legalPlays = calloc(counter, sizeof(int));
-    l = 0;
-    for (k = 1; k < N+1; k++) {
-        if (plays[k] == 0) {
-            legalPlays[l] = k;
-            l++;
-        }
-    }
-    result = (validPlays*) malloc(sizeof(validPlays));
-    result->validPlaysArray = legalPlays;
-    result->numOfPlays = counter;
-    free(plays);
-    return result;
-}
-
-cell** duplicate_board(cell** oldBoard) {
-    /* Duplicates sudoku board */
-    cell** newBoard;
-    int N, i, j;
-    N = blockRows * blockCols;
-    newBoard = generate_empty_board();
-    for (i = 0; i < N; i++){
-        for (j = 0; j < N; j++) {
-            newBoard[i][j].number = oldBoard[i][j].number;
-        }
-    }
-    return newBoard;
-}
-
-int deterministic_backtrack(cell** board, int i, int j) {
-    /* Counts number of solutions using exhaustive deterministic backtrack */
-    element* e;
-    int counter, firstPlay, N, k, nextI, nextJ, newI, newJ;
-    int data[2];
-    int* auxData;
-
-    validPlays* legalPlays;
-    cell** auxBoard;
-    cell** finalBoard;
-    stack* stck=calloc(1,sizeof(stack));
-    N = blockRows * blockCols;
-
-    stack_initialize(stck);
-    data[0]=i;
-    data[1]=j;
-    push(data, board, stck);
-
-    while (stck->counter > 0){
-        e = pop(stck);
-        auxData = e->data;
-        if (firstPlay == 0){
-            firstPlay = 1;
-            auxBoard = duplicate_board(board);
-            nextI = data[0];
-            nextJ = data[1];
-            newI = data[0];
-            newJ = data[1];
-        } else {
-            auxBoard = duplicate_board(e->board);
-            nextI = auxData[0];
-            nextJ = auxData[1];
-            newI = auxData[0];
-            newJ = auxData[1];
-        }
-        legalPlays = (validPlays*) get_valid_plays(auxBoard, newI, newJ);
-        do{
-            nextJ = (nextJ+1) % N;
-            if (nextJ == 0){
-                nextI = (nextI+1) % N;
-            }
-        }
-        while((nextJ != N-1 || nextI != N-1) && auxBoard[nextI][nextJ].number != 0);
-
-        if((((newI == N-1 && newJ == N-1)|| (nextI == N-1 && nextJ == N-1 && auxBoard[nextI][nextJ].number!=0)) && ((legalPlays->numOfPlays) == 1))) {
-                counter++;
-                continue;
-            } else {
-            for (k = 0; k < (legalPlays->numOfPlays); k++){
-                auxData = calloc(2,sizeof(int));
-                finalBoard = duplicate_board(auxBoard);
-                finalBoard[newI][newJ].number = (legalPlays->validPlaysArray)[k];
-                auxData[0] = nextI;
-                auxData[1] = nextJ;
-                push(auxData, finalBoard, stck);
-            }
-
-            free(legalPlays->validPlaysArray);
-            free(legalPlays);
-            }
-        }
-    free(stck);
-    return counter;
-}
-
-void set_fixed_cells(cell **board, int fixedCells) {
-    /*
-     * Randomly chooses given number of cells in the game board and sets them as fixed
-     */
-    int i, randX, randY;
-    for (i = 0; i < fixedCells; i++){
-        while (true) {
-            randX = rand() % NUM_OF_ROWS;
-            randY = rand() % NUM_OF_COLUMNS;
-            if (board[randY][randX].isFixed != true){
-                board[randY][randX].isFixed = true;
-                break;
-            }
-        }
-
-    }
-}
-
-void generate_solved_board(cell** board, int fixedCells){
-    /*
-     * Generates solved sudoku game board
-     */
-    recursive_backtrack(board, 0, 0);
-    set_fixed_cells(board, fixedCells);
-}
-
-/*void generate_user_board(cell **solved_board, cell** user_board) {
-
-     * Generates unsolved user sudoku game board
-
-    int i,j;
-    for (i=0; i < NUM_OF_ROWS; i++) {
-        for (j=0; j < NUM_OF_COLUMNS; j++) {
-            if (solved_board[i][j].isFixed) {
-                user_board[i][j].number = solved_board[i][j].number;
-                user_board[i][j].isFixed = true;
-            }
-            else{
-                user_board[i][j].number = UNASSIGNED;
-                user_board[i][j].isFixed = false;
-            }
-        }
-    }
-    printBoard(user_board);
-}*/
-
-void send_error(int error, char* str, GRBenv* env){
-    printf("ERROR %d %s: %s\n", error, str, GRBgeterrormsg(env));
-}
-
-
-cell** prepare_board_for_gurobi(cell** board) {
-    /* Prepares board for Gurobi by fixing its values */
-    int i, j, N;
-    cell** resultBoard= generate_empty_board();
-    N = blockRows * blockCols;
-    for (i = 0; i < N; i++){
-        for (j = 0; j < N; j++){
-            resultBoard[i][j].number = get_actual_value(board, i, j);
-        }
-    }
-    return resultBoard;
-}
-
-int ILP(cell **board, cell **solvedBoard) {
-
-    cell **auxBoard; 
-    int *ind, n, m, N, error, count, i, j, p, t, v, optimstatus;
-    GRBenv   *env   = NULL;
-    GRBmodel *model = NULL;
-    double *lb, *val, objval, *sol;
-    char *vtype, **names, *namestorage, *cursor;
-
-    n = blockRows;
-    m = blockCols;
-    N = n * m;
-    error = 0;
-    auxBoard = prepare_board_for_gurobi(board);
-    names = (char**) calloc(N*N*N, sizeof(char*));
-    namestorage = (char*) calloc(20*N*N*N, sizeof(char));
-    ind = (int*) calloc(N*N*N, sizeof(int));
-    val = (double*) calloc(N*N*N, sizeof(double));
-    lb = (double*) calloc(N*N*N, sizeof(double));
-    vtype = (char*) calloc(N*N*N, sizeof(char));
-    sol = (double*) calloc(N*N*N, sizeof(double));
-    
-    /* Create an empty model */
-
-    cursor = namestorage;
     for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            for (v = 0; v < N; v++) {
-                if(auxBoard[i][j].number == (v+1)){
-                    lb[i*N*N+j*N+v] = 1;
-                } else {
-                    lb[i*N*N+j*N+v] = 0;
-                }
-                vtype[i*N*N+j*N+v] = GRB_BINARY;
-                names[i*N*N+j*N+v] = cursor;
-                sprintf(names[i*N*N+j*N+v], "x[%d,%d,%d]", i, j, v+1);
-                cursor += strlen(names[i*N*N+j*N+v]) + 1;
-            }
-        }
+        free(board[i]);
     }
+    free(board);
+    board = NULL;
 
-    /* Create environment */
+}
 
-    error = GRBloadenv(&env, "sudoku.log");
-    
-    if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
-        send_error(error, "GRBloadenv", env); 
-        #endif
-        return 0;
-        }
-    
-    /* Removes Gurobi prints */
-    
-    error = GRBsetintparam(env, "OutputFlag", 0);
-    if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
-        send_error(error, "GRBsetintparam or GRBgetenv", env);
-        #endif
-        return 0;
-    }
-  
-    /* Create new model */
+void exit_game(char* command){
+    /*
+     * Free up memeory and exists the program
+     */
+    printf("Exiting...\n");
+    free(command);
 
-    error = GRBnewmodel(env, &model, "sudoku", N*N*N, NULL, lb, NULL, vtype, names);
-    if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
-        send_error(error, "GRBnewmodel", env);
-        #endif
-        return 0;
-    }
-    
-    
-    /* Each cell gets a value */
-
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            for (v = 0; v < N; v++) {
-                ind[v] = i*N*N + j*N + v;
-                val[v] = 1.0;
-            }
-            
-            error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
-            if (error) {
-                #ifdef PRINT_GUROBI_ERRORS
-                send_error(error, "GRBaddconstr1", env); 
-                #endif
-                return 0;
-            }
-        }
-    }
-
-    /* Each value must appear once in each row */
-
-    for (v = 0; v < N; v++) {
-        for (j = 0; j < N; j++) {
-            for (i = 0; i < N; i++) {
-                ind[i] = i*N*N + j*N + v;
-                val[i] = 1.0;
-            }
-            
-            error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
-            if (error) {
-                #ifdef PRINT_GUROBI_ERRORS
-                send_error(error, "GRBaddconstr2", env);
-                #endif
-                return 0;
-            }
-        }
-    }
-
-    /* Each value must appear once in each column */
-
-    for (v = 0; v < N; v++) {
-        for (i = 0; i < N; i++) {
-            for (j = 0; j < N; j++) {
-                ind[j] = i*N*N + j*N + v;
-                val[j] = 1.0;
-            }
-
-            error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
-            if (error) {
-                #ifdef PRINT_GUROBI_ERRORS
-                send_error(error, "GRBaddconstr3", env);
-                #endif
-                return 0;
-            }
-        }
-    }
-
-    /* Each value must appear once in each subgrid */
-
-    for (v = 0; v < N; v++) {
-        for (p = 0; p < m; p++) {
-            for (t = 0; t < n; t++) {
-                count = 0;
-                for (i = p*n; i < (p+1)*n; i++) {
-                    for (j = t*m; j < (t+1)*m; j++) {
-                        ind[count] = i*N*N + j*N + v;
-                        val[count] = 1.0;
-                        count++;
-                    }
-                }
-                
-                error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
-                if (error) {
-                    #ifdef PRINT_GUROBI_ERRORS
-                    send_error(error, "GRBaddconstr4", env);
-                    #endif
-                    return 0;
-                }
-            }
-        }
-    }
-    
-    /* Optimize model */
-
-    error = GRBoptimize(model);
-    if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
-        send_error(error, "GRBoptimize", env);
-        #endif
-        return 0;
-    }   
-
-    /* Capture solution information */
-
-    error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
-    if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
-        send_error(error, "GRBgetintattr", env);
-        #endif
-        return 0;
-    }
-    
-    error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
-    if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
-        send_error(error, "GRBgetdblattr", env);
-        #endif
-        return 0;
-    }
-    
-    
-    error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, N*N*N, sol);   
-    if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
-        send_error(error, "GRBgetdblattrarray", env);
-        #endif
-        return 0;
-    }
-    
-    #ifdef PRINT_GUROBI_ERRORS
-    printf("\nOptimization complete\n");
-    #endif
-
-    if (optimstatus == GRB_OPTIMAL) {
-        #ifdef PRINT_GUROBI_ERRORS
-        printf("Optimal objective function: %.4e\n", objval);       
-        #endif
-        for (i = 0; i < N; i++) {
-            for (j = 0; j < N; j++) {
-                for (v = 0; v < N; v++) {
-                    if (sol[i*N*N + j*N + v] != 0) {     
-                        solvedBoard[i][j].number = v+1;
-                    }
-                }
-            }
-        }
-    } else {
-        if(optimstatus == GRB_INF_OR_UNBD){
-            #ifdef PRINT_GUROBI_ERRORS
-            printf("Model is infeasible or unbounded\n");
-            #endif
-        } else {
-            #ifdef PRINT_GUROBI_ERRORS
-            printf("Optimization was stopped early\n");
-            #endif
-        }
-    }
-
-    /* Free Resources */
-    free(ind); 
-    free(val); 
-    free(lb); 
-    free(vtype); 
-    free(sol); 
-    free(names); 
-    free(namestorage);
-    GRBfreemodel(model);
-    GRBfreeenv(env);
-    return 1;
+    exit(0);
 }
