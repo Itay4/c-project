@@ -150,13 +150,12 @@ void printBoard(cell **board) { /*update with mode- print always atrisk in edit*
 
 void numSolutions(cell **board) {
     /* Counts the number of solutions of sudoku board */
-    /*
-    * TODO: Check if board has erroneous values
-    */ 
-    /*if board contains erroneous values{
-        printf("Error: board contains erroneous values\n");
-    }*/
+
+
     int solutionsCounter = countSolutions(board);
+    if (check_board_erroneous(board)){
+        printf(ERRONEOUS_ERROR);
+    }
     printf("Number of solutions: %d\n", solutionsCounter);
     if (solutionsCounter == 1) {
         printf("This is a good board!\n");
