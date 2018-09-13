@@ -45,7 +45,6 @@ bool board_is_empty(cell ** board) {
     return true;
 }
 
-
 cell** generate_empty_board(){
     /*allocates memmory for a board and reset it with unassigned values;*/
     int i, N;
@@ -348,8 +347,6 @@ cell **load_board(FILE* fp, char mode){/*add char mode- in edit need to clear al
     return board;
 }
 
-
-
 cell ** edit_command(char* parsedCommand[4], char mode){
     cell **board = NULL;
     FILE* fp = NULL;
@@ -391,12 +388,10 @@ cell **solve_command(char* parsedCommand[4],char mode){
     return board;
 }
 
-
 bool val_in_block(cell **board, int column, int row, int val){
     /*
      * Checks if value exist in the block containing given row and column
      */
-
     bool valExist = false;
     int initialCol, initialRow, colIndex, rowIndex;
     initialCol = get_block_col_index(column);
@@ -417,7 +412,6 @@ bool val_in_row(cell **board, int column, int row, int val){
     /*
      * Checks if value exist in the given row
      */
-
     int N = blockRows * blockCols;
     bool valExist = false;
     int colIndex;
@@ -500,7 +494,6 @@ void game_over(cell **board){
         }
     }
 }
-
 
 bool auto_fill(cell **board)	{
     /*
@@ -591,7 +584,6 @@ bool validate_risks(cell **board, int column, int row) {
     }
     return risksFound;
 }
-
 
 bool set(cell **board, int column, int row, int val, char mode) {
     int N = blockRows * blockCols;
@@ -693,7 +685,6 @@ void exit_game(char* command){
     exit(0);
 }
 
-
 bool fill_cell(cell** board, int column, int row){
     /*fills the cell with legal random legal value, if no value found returns false*/
     cell ** copyOfBoard;
@@ -777,5 +768,3 @@ bool generate_randomized_solved_board (cell** board, int initialFullCells, int f
     printf("Error: puzzle generator failed\n");
     return false;
 }
-
-

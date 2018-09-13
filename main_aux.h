@@ -11,8 +11,6 @@ typedef int bool;
 #define false 0
 
 #define UNASSIGNED 0
-
-
 #define MAX_CMD_SIZE 256
 
 #define FIXED_ERROR "Error: cell is fixed\n"
@@ -47,6 +45,5 @@ bool valid_set_value(int val, int N);
 int* get_next_play(cell** board);
 
 int * generate_int_array(int maxVal);
-
 
 #endif /*SUDOKU90_MAIN_AUX_H*/

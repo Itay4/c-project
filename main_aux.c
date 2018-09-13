@@ -17,7 +17,6 @@ void delFromArr(int position, int numbersLeft, int* availableNumbers) {
     }
 }
 
-
 void memory_error(char* func){
     /*
      * Prints error message and exists the program
@@ -49,6 +48,7 @@ int get_block_row_index(int row){
     initialRow = blockRows * (blockNumberRows - 1);
     return initialRow;
 }
+
 bool valid_board_index(int index, int N){
     if (index < 1 || index > N ) {
         return false;

@@ -126,5 +126,3 @@ void reset(list * lst, cell **board,char mode){
     printf("Board reset\n");
 
 }
-
-

@@ -177,12 +177,9 @@ void set_fixed_cells(cell **board, int fixedCells) {
     }
 }
 
-
-
 void send_error(int error, char* str, GRBenv* env){
     printf("ERROR %d %s: %s\n", error, str, GRBgeterrormsg(env));
 }
-
 
 cell** prepare_board_for_gurobi(cell** board) {
     /* Prepares board for Gurobi by fixing its values */
@@ -433,7 +430,7 @@ bool ILP(cell **board, cell **solvedBoard) {
 
 void generate_user_board(cell** solved_board, cell** user_board) {
 /*
- * Generates unsolved user sudoku game board
+ * Generates unsolved user sudoku game board (copying only fixed cells)
  */
     int i,j;
     int N = blockRows  * blockCols;

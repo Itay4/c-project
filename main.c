@@ -14,17 +14,13 @@ int markErrors = 1;
 char mode = 'I';
 
 int main() {
-
     char *parsedCommand[4] = {'\0', '\0', '\0', '\0'};
     char *command = malloc(MAX_CMD_SIZE + 1);
     cell **board;
     cell** tmpBoard;
     cell **startingBoard;
     list *movesList;
-    int argsCounter;
-
-    int i;
-
+    int argsCounter, i;
 
     printf("Sudoku\n------\n");
     printf("Enter your command:\n");
@@ -78,6 +74,5 @@ int main() {
         }
         printf("Enter your command:\n");
     }
-
     return 0;
 }

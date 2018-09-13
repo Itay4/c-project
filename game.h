@@ -5,10 +5,9 @@
 #define SUDOKU90_GAME_H
 
 
+void empty_board(cell ** board);
 
 cell **generate_empty_board();
-
-void empty_board(cell ** board);
 
 void copy_board(cell **source_board, cell **new_board);
 
@@ -49,8 +48,6 @@ bool auto_fill(cell **board);
 void num_solutions(cell **board);
 
 int count_solutions(cell **board);
-
-int count_solutions_rec(cell **board, int i, int j, int counter);
 
 void free_board(cell** board);
 
