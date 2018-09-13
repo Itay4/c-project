@@ -706,8 +706,8 @@ bool fill_cell(cell** board, int column, int row){
             copyOfBoard[row][column].number = nextNum;
             if (validate_risks(board,column + 1 ,row + 1 )){
                 board[row][column].number = nextNum;
-                free_board(copyOfBoard);
                 copy_board(copyOfBoard, board);
+                free_board(copyOfBoard);
                 free(availableNumbers);
                 return true;
             }
@@ -731,8 +731,8 @@ bool generate_randomized_solved_board (cell** board, int initialFullCells, int f
     int cellsFilled = 0;
     int triesLeft = 1000;
     int N = blockCols * blockRows;
-    if ((!valid_set_value(initialFullCells, N)) || (!valid_set_value(finalFixedCells, N))) {
-        printf(VALUE_RANGE_ERROR, N);
+    if ((!valid_set_value(initialFullCells, N*N)) || (!valid_set_value(finalFixedCells, N*N))) {
+        printf(VALUE_RANGE_ERROR, N*N);
         return false;
     }
     if (!board_is_empty(board)) {
