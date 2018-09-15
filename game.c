@@ -682,9 +682,9 @@ void hint(cell **board, int column, int row){
     int hint;
     bool solvable;
     cell **solvedBoard = NULL;
-    int N = blockCols *blockRows;
+    int N = blockCols * blockRows;
     if((!valid_board_index(column, N)) || (!valid_board_index(row, N))) {
-        printf("Error: value not in range 1-&d\n",N);
+        printf("Error: value not in range 1-%d\n",N);
         return;
     }
     if (check_board_erroneous(board)) {
