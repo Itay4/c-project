@@ -18,6 +18,21 @@ extern int markErrors;
 extern char mode;
 extern bool gameOver;
 
+int count_empty_cells(cell ** board) {
+    int i, j;
+    int counter = 0;
+    int N = blockRows * blockCols;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            if (board[i][j].number != UNASSIGNED) {
+                counter++;
+            }
+        }
+    }
+    return counter;
+}
+
+
 
 void empty_board(cell ** board) {
     /* empty current board by setting all values to unassigned*/
@@ -34,14 +49,10 @@ void empty_board(cell ** board) {
 
 bool board_is_empty(cell ** board) {
     /*returns true if board is filled only with unassigned values*/
-    int i, j;
+
     int N = blockRows * blockCols;
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            if(board[i][j].number != UNASSIGNED){
-                return false;
-            }
-        }
+    if (count_empty_cells(board) != N){
+        return false;
     }
     return true;
 }
@@ -726,12 +737,13 @@ bool fill_cell(cell** board, int column, int row){
 bool generate_randomized_solved_board (cell** board, int initialFullCells, int copyCells) {
     cell **newBoard;
     bool solvable;
-    int randCol, randRow;
+    int randCol, randRow, emptyCellsCounter;
     int cellsFilled = 0;
     int triesLeft = 1000;
     int N = blockCols * blockRows;
-    if ((!valid_set_value(initialFullCells, N*N)) || (!valid_set_value(copyCells, N*N))) {
-        printf(VALUE_RANGE_ERROR, N*N);
+    emptyCellsCounter = count_empty_cells(board);
+    if ((!valid_set_value(initialFullCells, emptyCellsCounter)) || (!valid_set_value(copyCells, emptyCellsCounter))) {
+        printf(VALUE_RANGE_ERROR, emptyCellsCounter);
         return false;
     }
     if (!board_is_empty(board)) {
