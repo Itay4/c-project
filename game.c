@@ -140,7 +140,7 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
         if (cmdExecuted) {
             update_moves_list(board, lst);
         }
-    } else if (strcmp(parsedCommand[0], "hint") == 0 &&  counter == 3 && mode == 'S') {
+    } else if (strcmp(parsedCommand[0], "hint") == 0 &&  counter >= 3 && mode == 'S') {
         if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2]))){
             printf(VALUE_RANGE_ERROR, blockCols*blockRows);
             return;
@@ -161,7 +161,7 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
         if (cmdExecuted) {
             update_moves_list(board, lst);
         }
-    } else if (strcmp(parsedCommand[0], "save") == 0 && counter == 2 && (mode == 'E' || mode == 'S')) {
+    } else if (strcmp(parsedCommand[0], "save") == 0 && counter >= 2 && (mode == 'E' || mode == 'S')) {
         save_command(board, parsedCommand[1]);
     } else if (strcmp(parsedCommand[0], "num_solutions") == 0 && (mode == 'E' || mode == 'S')) {
         num_solutions(board);
@@ -682,6 +682,11 @@ void hint(cell **board, int column, int row){
     int hint;
     bool solvable;
     cell **solvedBoard = NULL;
+    int N = blockCols *blockRows;
+    if((!valid_board_index(column, N)) || (!valid_board_index(row, N))) {
+        printf(VALUE_RANGE_ERROR, blockCols * blockRows);
+        return;
+    }
     if (check_board_erroneous(board)) {
         printf("Error: board contains erroneous values\n");
         return;
