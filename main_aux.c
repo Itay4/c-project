@@ -7,23 +7,33 @@ extern int blockRows;
 extern int blockCols;
 extern int mark_errors;
 
-
-void del_from_arr(int position, int numbersLeft, int availableNumbers[]) {
+void delFromArr(int position, int numbersLeft, int* availableNumbers) {
     /*
-     * Simulates deletion of element in given position in array by shifting left elements
+     * Simulates deletion of elemnt in given position in array by shifting left elements
      */
-    int c;
-    for ( c = position - 1 ; c < numbersLeft - 1 ; c++ ) {
-        availableNumbers[c] = availableNumbers[c+1];
+
+    int i = 0;
+    int j;
+    int * tmpArray = malloc(numbersLeft * sizeof(int));
+    for ( j = 0; j < numbersLeft + 1; j++ ){
+        if (j != position) {
+            tmpArray[i] = availableNumbers[j];
+            i++;
+        }
     }
+    for ( j = 0; j < numbersLeft; j++ ){
+        availableNumbers[j] = tmpArray[j];
+        }
+
+    free(tmpArray);
 }
 
 void memory_error(char* func){
     /*
-     * Prints error message and exists the program
+     * Prints error message
      */
     printf("Error: %s has failed\n", func);
-    exit(0);
+\
 }
 
 bool is_integer(char *s){
@@ -49,6 +59,7 @@ int get_block_row_index(int row){
     initialRow = blockRows * (blockNumberRows - 1);
     return initialRow;
 }
+
 bool valid_board_index(int index, int N){
     if (index < 1 || index > N ) {
         return false;
@@ -81,3 +92,15 @@ int* get_next_play(cell** board) {
     }
     return auxArray;
 }
+
+int * generate_int_array(int maxVal)
+{
+    int* array;
+    int i;
+    array = malloc(maxVal * sizeof(int));
+    for (i = 1; i < maxVal + 1; i++){
+       array[i-1] = i;
+    }
+return array;
+}
+

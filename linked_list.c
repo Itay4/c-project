@@ -24,9 +24,11 @@ list* create_list(cell **board){
 }
 
 void delete_next_nodes(node* newTail, list *lst) {
-    node * currentToDel = newTail->next;
+    node * currentToDel = lst->current->next;
     newTail->next = NULL;
+    newTail->prev = lst->current;
     lst->tail = newTail;
+    lst->current->next = newTail;
     lst->current = newTail;
     if (currentToDel == NULL) {
         return; /*no nodes to delete*/
@@ -45,7 +47,7 @@ void delete_next_nodes(node* newTail, list *lst) {
 void insert_at_tail(cell **board, list *lst) {
     node *temp = lst->current;
     node *newNode = create_node(board);
-    if (temp == NULL) { /*first move*/
+    if (temp == NULL ) { /*first move*/
         lst->head->next = newNode;
         newNode->prev = lst->head;
         lst->current = newNode;
@@ -53,7 +55,7 @@ void insert_at_tail(cell **board, list *lst) {
         return;
     }
     else if (temp != lst->tail){
-        delete_next_nodes(temp, lst);
+        delete_next_nodes(newNode, lst);
     }
     else {
         lst->tail->next = newNode;
@@ -126,5 +128,3 @@ void reset(list * lst, cell **board,char mode){
     printf("Board reset\n");
 
 }
-
-

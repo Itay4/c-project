@@ -1,15 +1,19 @@
 #include "linked_list.h"
 #include "main_aux.h"
 
-#ifndef GAME_H
-#define GAME_H
+#ifndef SUDOKU90_GAME_H
+#define SUDOKU90_GAME_H
 
+
+void empty_board(cell ** board);
 
 cell **generate_empty_board();
 
 void copy_board(cell **source_board, cell **new_board);
 
 void print_board(cell **board, char mode);
+
+void update_moves_list(cell** board, list *lst);
 
 void execute_command(char *parsedCommand[4], cell **board, char* command, int counter, char mode, list *lst);
 
@@ -29,7 +33,7 @@ void validate(cell **board);
 
 bool check_board_erroneous(cell **board);
 
-void validate_risks(cell **board, int column, int row);
+bool validate_risks(cell **board, int column, int row);
 
 void hint(cell **board, int column, int row);
 
@@ -47,10 +51,12 @@ void num_solutions(cell **board);
 
 int count_solutions(cell **board);
 
-int count_solutions_rec(cell **board, int i, int j, int counter);
-
 void free_board(cell** board);
 
 void exit_game(char* command);
 
-#endif /* GAME_H */
+bool generate_randomized_solved_board (cell** board, int initialFullCells, int finalFixedCells);
+
+
+
+#endif /*SUDOKU90_GAME_H*/
