@@ -93,14 +93,13 @@ int* get_next_play(cell** board) {
     return auxArray;
 }
 
-int * generate_int_array(int maxVal)
-{
+int* generate_int_array(int maxVal) {
     int* array;
     int i;
     array = malloc(maxVal * sizeof(int));
     for (i = 1; i < maxVal + 1; i++){
        array[i-1] = i;
     }
-return array;
+    return array;
 }
 

@@ -24,9 +24,6 @@ int main() {
     int argsCounter, i;
     bool invalidCmd = false;
 
-
-
-
     srand(time(NULL));
     printf("Sudoku\n------\n");
     printf("Enter your command:\n");

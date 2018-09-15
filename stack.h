@@ -1,8 +1,8 @@
 
 #include "main_aux.h"
 
-#ifndef SUDOKU90_STACK_H
-#define SUDOKU90_STACK_H
+#ifndef STACK_H
+#define STACK_H
 
 
 typedef struct element {
@@ -23,4 +23,4 @@ void push(int* data, cell** board, stack* stck);
 
 element* pop(stack* stck);
 
-#endif /*SUDOKU90_STACK_H*/
+#endif /*STACK_H*/

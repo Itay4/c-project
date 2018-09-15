@@ -9,7 +9,6 @@ void stack_initialize(stack* stck ) {
     stck->top = NULL;
 }
 
-
 void push(int* data, cell** board, stack* stck ) {
     /* Pushes an element to top of stack*/
     element *e = NULL;
