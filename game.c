@@ -15,23 +15,47 @@
 extern int blockRows;
 extern int blockCols;
 extern int markErrors;
+extern char mode;
+extern bool gameOver;
 
+
+void empty_board(cell ** board) {
+    /* empty current board by setting all values to unassigned*/
+    int i, j;
+    int N = blockRows * blockCols;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            board[i][j].number = UNASSIGNED;
+            board[i][j].asterisk = false;
+            board[i][j].isFixed = false;
+        }
+    }
+}
+
+bool board_is_empty(cell ** board) {
+    /*returns true if board is filled only with unassigned values*/
+    int i, j;
+    int N = blockRows * blockCols;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            if(board[i][j].number != UNASSIGNED){
+                return false;
+            }
+        }
+    }
+    return true;
+}
 
 cell** generate_empty_board(){
-    int i, j, N;
+    /*allocates memmory for a board and reset it with unassigned values;*/
+    int i, N;
     cell **board = NULL;
     N =  blockRows * blockCols;
     board = calloc(N, sizeof (*board));
     for (i = 0; i < N; i++) {
         board[i] = calloc(N, sizeof (**board));
     }
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            board[i][j].number = UNASSIGNED;
-            board[i][j].isFixed = false;
-            board[i][j].asterisk = false;
-        }
-    }
+    empty_board(board);
     return board;
 }
 
@@ -67,24 +91,29 @@ void mark_asterisks(cell **board) {
     }
 }
 
+void update_moves_list(cell** board, list *lst) {
+    cell **boardAfter;
+    boardAfter = generate_empty_board(blockRows, blockCols);
+    copy_board(board, boardAfter);
+    insert_at_tail(boardAfter, lst);
+    return;
+}
+
+
 void execute_command(char *parsedCommand[4], cell **board, char* command, int counter, char mode, list *lst){
     /*
      * Evaluates game command (SET/HINT/VALIDATE/RESTART/EXIT) and calls the relavent function to execute it
      */
-    /*TODO: missing generate X Y (add when ILP done)*/
-    int setFlag = 0;
-    int fillFlag = 0;
+    bool cmdExecuted = false;
     cell ** boardAfter;
     if (strcmp(parsedCommand[0], "set") == 0 && counter == 4 && (mode == 'E' || mode == 'S')) {
         if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2])) || (!is_integer(parsedCommand[3]))){
             printf(VALUE_RANGE_ERROR, blockCols * blockRows);
             return;
         }
-        setFlag = set(board, atoi(parsedCommand[1]),atoi(parsedCommand[2]), atoi(parsedCommand[3]), mode);
-        if (setFlag) {
-            boardAfter = generate_empty_board(blockRows, blockCols);
-            copy_board(board, boardAfter);
-            insert_at_tail(boardAfter, lst);
+        cmdExecuted = set(board, atoi(parsedCommand[1]),atoi(parsedCommand[2]), atoi(parsedCommand[3]), mode);
+        if (cmdExecuted) {
+            update_moves_list(board, lst);
         }
     } else if (strcmp(parsedCommand[0], "hint") == 0 &&  counter == 3 && mode == 'S') {
         if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2]))){
@@ -96,23 +125,30 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
         validate(board);
     } else if ((strcmp(parsedCommand[0], "print_board") == 0) && (mode == 'E' || mode == 'S')) {
         print_board(board, mode);
-    } else if (strcmp(parsedCommand[0], "mark_errors") == 0 && (mode == 'S')) {
+    } else if (strcmp(parsedCommand[0], "mark_errors") == 0 && counter==2 && (mode == 'S')) {
         if (!is_integer(parsedCommand[1])) {
             printf(MARK_ERROR_ERROR);
             return;
         }
         mark_errors_command(atoi(parsedCommand[1]));
     } else if (strcmp(parsedCommand[0], "autofill") == 0 && mode == 'S') {
-        fillFlag = auto_fill(board);
-        if (fillFlag) {
-            boardAfter = generate_empty_board();
-            copy_board(board, boardAfter);
-            insert_at_tail(boardAfter, lst);
+        cmdExecuted = auto_fill(board);
+        if (cmdExecuted) {
+            update_moves_list(board, lst);
         }
     } else if (strcmp(parsedCommand[0], "save") == 0 && (mode == 'E' || mode == 'S')) {
         save_command(board, parsedCommand[1], mode);
     } else if (strcmp(parsedCommand[0], "num_solutions") == 0 && (mode == 'E' || mode == 'S')) {
         num_solutions(board);
+    } else if (strcmp(parsedCommand[0], "generate") == 0 && counter == 3 && mode == 'E' ) {
+        if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2]))){
+            printf(VALUE_RANGE_ERROR, blockCols * blockRows);
+            return;
+        }
+        cmdExecuted = generate_randomized_solved_board(board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
+        if (cmdExecuted) {
+            update_moves_list(board, lst);
+        }
     } else if (((strcmp(parsedCommand[0], "undo") == 0)) && (mode == 'E' || mode == 'S')) {
         undo(lst, board, mode);
     } else if (((strcmp(parsedCommand[0], "redo") == 0)) && (mode == 'E' || mode == 'S')) {
@@ -120,8 +156,10 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
     } else if (((strcmp(parsedCommand[0], "reset") == 0)) && (mode == 'E' || mode == 'S')) {
         reset(lst, board, mode);
     } else if (strcmp(parsedCommand[0], "exit") == 0) {
-        free_board(board);
-        free_list(lst);
+        if( mode != 'I' || gameOver) {
+            free_board(board);
+            free_list(lst);
+        }
         exit_game(command);
     } else {
         printf(INVALID_ERROR);
@@ -182,14 +220,14 @@ void validate(cell **board) {
      */
     cell **copyBoard;
     int solvable;
-    /* if board contains erroneous values {
-        printf("Error: board contains erroneous values\n");
-    }*/
+    if (check_board_erroneous(board)) {
+        printf(ERRONEOUS_ERROR );
+        return;
+    }
     copyBoard = duplicate_board(board);
-    solvable = 1;
     solvable = ILP(board, copyBoard);
 
-    if (solvable == 1) {
+    if (solvable == true) {
         printf("Validation passed: board is solvable\n");
     } else {
         printf("Validation failed: board is unsolvable\n");
@@ -230,24 +268,24 @@ int count_solutions(cell** board) {
 }
 
 void save_command(cell **board, char *filePath,char mode) {
-    /*
-    TODO: remove remarks... waiting for validate
-    */
-
     FILE *fp;
     int i, j, N;
+    cell ** copyOfBoard;
+    bool solvable;
 
     if (mode == 'E') {
         if (check_board_erroneous(board)) {
             printf(ERRONEOUS_ERROR);
             return;
         }
-      /*
-        else if (validate(board) == false) {
-            printf(VALIDATION_ERROR);
-            return;
-      }
-        */
+        copyOfBoard = generate_empty_board();
+        solvable = ILP(board,copyOfBoard);
+        free_board(copyOfBoard);
+        if (solvable == false) {
+              printf("Error: board validation failed\n");
+              return;
+        }
+
     }
 
     if ((fp = fopen(filePath, "wb")) == NULL) {
@@ -303,19 +341,17 @@ cell **load_board(FILE* fp, char mode){/*add char mode- in edit need to clear al
         for (j = 0; j < N; j++) {
             board[i][j].number = token[0] - '0';
             if ((token[1] == '.') && (mode == 'S')) {
-                    board[i][j].isFixed = true;
+                board[i][j].isFixed = true;
             }
             else if (token[1] == '*') {
                 board[i][j].asterisk = true;
-                }
+            }
             token = strtok(NULL, delimiter);
         }
     }
     mark_asterisks(board);
     return board;
 }
-
-
 
 cell ** edit_command(char* parsedCommand[4], char mode){
     cell **board = NULL;
@@ -358,12 +394,10 @@ cell **solve_command(char* parsedCommand[4],char mode){
     return board;
 }
 
-
 bool val_in_block(cell **board, int column, int row, int val){
     /*
      * Checks if value exist in the block containing given row and column
      */
-
     bool valExist = false;
     int initialCol, initialRow, colIndex, rowIndex;
     initialCol = get_block_col_index(column);
@@ -384,7 +418,6 @@ bool val_in_row(cell **board, int column, int row, int val){
     /*
      * Checks if value exist in the given row
      */
-
     int N = blockRows * blockCols;
     bool valExist = false;
     int colIndex;
@@ -440,38 +473,38 @@ void game_over(cell **board){
     /*
      * Checks if board is full and solved correctly
      */
-    /*TODO: validaeion with ILP*/
-
     int col, row;
-    /*bool full = true;*/
+    bool solvable;
+    bool full = true;
+    cell** copyBoard;
+    int N = blockCols * blockRows;
     if (check_board_erroneous(board)){
         return;
     }
-        for (col = 0; col < NUM_OF_COLUMNS; col++) {
-        for (row = 0; row < NUM_OF_ROWS; row++) {
+    for (col = 0; col < N; col++) {
+        for (row = 0; row < N; row++) {
             if (board[row][col].number == UNASSIGNED) {
-                /*full = false;*/
+                full = false;
             }
         }
     }
-    /*
-    if (full){
-        if validate(board){
+    if (full) {
+        copyBoard = generate_empty_board();
+        solvable = ILP(board, copyBoard);
+        free_board(copyBoard);
+        if (solvable) {
             printf(GAME_OVER);
             mode = 'I';
+            gameOver = true;
+        } else {
+            printf("Puzzle solution erroneous\n");
         }
-    else{
-     printf("Puzzle solution erroneous\n");
-
     }
-     */
 }
 
-
-int auto_fill(cell **board)	{
+bool auto_fill(cell **board)	{
     /*
      * Autofills cells which contain a single legal value
-
      */
     int i, j, k, candidate;
     int fillFlag = false;
@@ -510,9 +543,10 @@ int auto_fill(cell **board)	{
     return fillFlag;
 }
 
-void validate_risks(cell **board, int column, int row) {
+bool validate_risks(cell **board, int column, int row) {
     int initialCol, initialRow, colIndex, rowIndex;
     int N = blockRows * blockCols;
+    bool risksFound = true;
     initialCol = get_block_col_index(column);
     initialRow = get_block_row_index(row);
     for (colIndex = initialCol; (colIndex < blockCols + initialCol); colIndex++) { /*block*/
@@ -524,6 +558,9 @@ void validate_risks(cell **board, int column, int row) {
                 if(valid_check(board, colIndex + 1, rowIndex + 1, board[rowIndex][colIndex].number)){
                     board[rowIndex][colIndex].asterisk = false;
                 }
+                else{
+                    risksFound = false;
+                }
             }
         }
     }
@@ -533,6 +570,9 @@ void validate_risks(cell **board, int column, int row) {
         else if (board[row - 1][colIndex].asterisk){
             if (valid_check(board, colIndex + 1, row, board[row - 1][colIndex].number)){
                 board[row - 1][colIndex].asterisk = false;
+            }
+            else{
+                risksFound = false;
             }
         }
     }
@@ -544,10 +584,13 @@ void validate_risks(cell **board, int column, int row) {
             if( valid_check(board, column , rowIndex + 1, board[rowIndex][column - 1].number)){
                 board[rowIndex][column - 1].asterisk = false;
             }
+            else{
+                risksFound = false;
+            }
         }
     }
+    return risksFound;
 }
-
 
 bool set(cell **board, int column, int row, int val, char mode) {
     int N = blockRows * blockCols;
@@ -555,13 +598,13 @@ bool set(cell **board, int column, int row, int val, char mode) {
         printf(VALUE_RANGE_ERROR, blockCols * blockRows);
         return false;
     }
-     if (board[row - 1][column - 1].isFixed) {
+    if (board[row - 1][column - 1].isFixed) {
         printf(FIXED_ERROR);
         return false;
-     }
-     else if (board[row - 1][column - 1].number == val) {
-         print_board(board, mode);
-         return  false;
+    }
+    else if (board[row - 1][column - 1].number == val) {
+        print_board(board, mode);
+        return  false;
     }
     else if (val == 0) {
         board[row - 1][column - 1].number = UNASSIGNED;
@@ -600,32 +643,32 @@ void hint(cell **board, int column, int row){
     /*
      * Prints the value of the cell <row,column> on the last solved sudoku board
      */
-
-    /* TODO: after ILP solver working unmark code */
-
-    /* int hint;
-    cell **solvedBoard = NULL; */
+    int hint;
+    bool solvable;
+    cell **solvedBoard = NULL;
     if (check_board_erroneous(board)) {
         printf("Error: board contains erroneous values\n");
         return;
     }
     if (board[row - 1][column - 1].isFixed) {
         printf(FIXED_ERROR);
-        return;;
+        return;
     }
-    if (board[row - 1][column - 1].number == 0) {
+    if (board[row - 1][column - 1].number != 0) {
         printf("Error: cell already contains a value\n");
         return;
     }
-    /*solvedBoard = validate(board)
-      if (solvedBoard == NULL){
-      printf("Error: board is unsolvable\n");
-      return;
-      }
+    solvedBoard = generate_empty_board();
+    solvable = ILP(board,solvedBoard);
+    if (solvable == false){
+        printf("Error: board is unsolvable\n");
+        return;
+    }
     else{
-         hint = solvedBoard_[row-1][column-1].number;
-        printf("Hint: set cell to %d\n", hint);
-        }*/
+         hint = solvedBoard[row - 1][column - 1].number;
+         printf("Hint: set cell to %d\n", hint);
+         free_board(solvedBoard);
+        }
 }
 
 void free_board(cell** board){
@@ -645,6 +688,88 @@ void exit_game(char* command){
      */
     printf("Exiting...\n");
     free(command);
-
     exit(0);
+}
+
+bool fill_cell(cell** board, int column, int row){
+    /*fills the cell with legal random legal value, if no value found returns false*/
+    cell ** copyOfBoard;
+    int numbersLeft, randomIndex, nextNum;
+    int N = blockRows * blockCols;
+    int* availableNumbers;
+    availableNumbers = generate_int_array(N);
+    copyOfBoard = generate_empty_board();
+    copy_board(board, copyOfBoard);
+    numbersLeft = N;
+    while (numbersLeft > 0){
+        randomIndex = rand() % numbersLeft;
+        nextNum = availableNumbers[randomIndex];
+        if(valid_check(copyOfBoard, column + 1 ,row + 1, nextNum)){
+            copyOfBoard[row][column].number = nextNum;
+            copy_board(copyOfBoard, board);
+            free_board(copyOfBoard);
+            free(availableNumbers);
+            return true;
+        }
+        copyOfBoard[row][column].number = UNASSIGNED;
+        copyOfBoard[row][column].asterisk = false;
+        numbersLeft--;
+        if (numbersLeft > 0) {
+            delFromArr(randomIndex, numbersLeft, availableNumbers);
+        }
+}
+    free_board(copyOfBoard);
+    free(availableNumbers);
+    return false;
+}
+
+bool generate_randomized_solved_board (cell** board, int initialFullCells, int copyCells) {
+    cell **newBoard;
+    bool solvable;
+    int randCol, randRow;
+    int cellsFilled = 0;
+    int triesLeft = 1000;
+    int N = blockCols * blockRows;
+    if ((!valid_set_value(initialFullCells, N*N)) || (!valid_set_value(copyCells, N*N))) {
+        printf(VALUE_RANGE_ERROR, N*N);
+        return false;
+    }
+    if (!board_is_empty(board)) {
+        printf("Error: board is not empty\n");
+        return false;
+    }
+    while (triesLeft > 0) {
+
+        if (cellsFilled < initialFullCells) {
+            randCol = rand() % N;
+            randRow = rand() % N;
+            if (board[randRow][randCol].number == UNASSIGNED) {
+                if (!fill_cell(board, randCol, randRow)) {
+                    triesLeft--;
+                    empty_board(board);
+                    cellsFilled = 0;
+                } else {
+                    cellsFilled++;
+                }
+            }
+        }
+        else if (cellsFilled == initialFullCells) {
+            newBoard = generate_empty_board();
+            solvable = ILP(board, newBoard);
+            empty_board(board);
+            if (solvable) {
+                copy_random_cells(newBoard, copyCells, board);
+                free_board(newBoard);
+                print_board(board, 'E');
+                return true;
+            } else {
+                triesLeft--;
+                empty_board(board);
+                empty_board(newBoard);
+                cellsFilled = 0;
+            }
+        }
+    }
+    printf("Error: puzzle generator failed\n");
+    return false;
 }

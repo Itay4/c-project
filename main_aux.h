@@ -1,6 +1,6 @@
 
-#ifndef MAIN_AUX_H
-#define MAIN_AUX_H
+#ifndef SUDOKU90_MAIN_AUX_H
+#define SUDOKU90_MAIN_AUX_H
 
 extern int blockRows;
 extern int blockCols;
@@ -11,9 +11,6 @@ typedef int bool;
 #define false 0
 
 #define UNASSIGNED 0
-#define NUM_OF_ROWS 9  /* TODO: remove */
-#define NUM_OF_COLUMNS 9 /* TODO: remove */
-#define BLOCK_SIZE 3 /* TODO: remove */
 #define MAX_CMD_SIZE 256
 
 #define FIXED_ERROR "Error: cell is fixed\n"
@@ -22,7 +19,6 @@ typedef int bool;
 #define INVALID_ERROR "ERROR: invalid command\n"
 #define GAME_OVER "Puzzle solved successfully\n"
 #define VALIDATION_ERROR "Validation failed: board is unsolvable\n"
-
 #define ERRONEOUS_ERROR "Error: board contains erroneous values\n"
 
 /* Types */
@@ -32,7 +28,7 @@ typedef struct  { /* TODO: sonsider to move to game.h */
     bool asterisk;
 } cell;
 
-void del_from_arr(int position, int numbersLeft, int availableNumbers[]);
+void delFromArr(int position, int numbersLeft, int* availableNumbers);
 
 void memory_error(char* func);
 
@@ -48,4 +44,6 @@ bool valid_set_value(int val, int N);
 
 int* get_next_play(cell** board);
 
-#endif /* MAIN_AUX_H */
+int * generate_int_array(int maxVal);
+
+#endif /*SUDOKU90_MAIN_AUX_H*/

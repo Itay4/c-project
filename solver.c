@@ -13,53 +13,6 @@ typedef struct validPlays {
     int numOfPlays;
 } validPlays;
 
-bool recursive_backtrack(cell** board, int row, int column) {
-    /*
-     * Recursive backtrack to solve sudoku board
-     */
-    int nextNum, i, j;
-    int randomIndex;
-    int availableNumbers[9];
-    j = 0;
-    if (row == 9) {
-        return true;
-    }
-
-    /* If cell number is already set, no need to change and recruse to next cell */
-    if (board[row][column].number) {
-        if (column == 8) {
-            if (recursive_backtrack(board, row+1, 0)) return true;
-        } else {
-            if (recursive_backtrack(board, row, column+1)) return true;
-        }
-        return false;
-    }
-    for (i = 1; i < 10; i++){
-        if (valid_check(board, column, row, i)) {
-            availableNumbers[j] = i;
-            j++;}
-    }
-    while (j > 0) {
-        if (j==1) { 
-            nextNum = availableNumbers[0];
-        } else {
-            randomIndex = rand() % j;
-            nextNum = availableNumbers[randomIndex];
-        }
-        board[row][column].number = nextNum;
-        del_from_arr(randomIndex + 1, j, availableNumbers);
-        j--;
-        if (column == 8) {
-            if (recursive_backtrack(board, row + 1, 0)) return true;
-        } else {
-            if (recursive_backtrack(board, row, column + 1)) return true;
-        }
-        board[row][column].number = 0;
-
-    }
-    return false;
-}
-
 int get_actual_value(cell** board, int i, int j) {
     /* Gets the actual value of cell */
     int value = board[i][j].number;
@@ -67,7 +20,7 @@ int get_actual_value(cell** board, int i, int j) {
     if (value < 0) {
         value = value * (-1);
     }
-    if (value > N) { 
+    if (value > N) {
         value = value - N;
     }
     return value;
@@ -102,7 +55,7 @@ validPlays* get_valid_plays(cell** board, int i, int j) {
         for(l = blockCols*roundJ; l<blockCols+blockCols*roundJ; l++) {
             value = get_actual_value(board, k, l);
             if (value != 0) {
-            plays[value] = 1;
+                plays[value] = 1;
             }
         }
     }
@@ -126,7 +79,7 @@ validPlays* get_valid_plays(cell** board, int i, int j) {
     return result;
 }
 
-cell** duplicate_board(cell** oldBoard) {
+cell** duplicate_board(cell** oldBoard) { /*TODO: ADD COPY INSIDE AND MOVE TO GAME AND THEN FIXE CODE WITH GENERATE */
     /* Duplicates sudoku board */
     cell** newBoard;
     int N, i, j;
@@ -185,9 +138,9 @@ int deterministic_backtrack(cell** board, int i, int j) {
         while((nextJ != N-1 || nextI != N-1) && auxBoard[nextI][nextJ].number != 0);
 
         if((((newI == N-1 && newJ == N-1)|| (nextI == N-1 && nextJ == N-1 && auxBoard[nextI][nextJ].number!=0)) && ((legalPlays->numOfPlays) == 1))) {
-                counter++;
-                continue;
-            } else {
+            counter++;
+            continue;
+        } else {
             for (k = 0; k < (legalPlays->numOfPlays); k++){
                 auxData = calloc(2,sizeof(int));
                 finalBoard = duplicate_board(auxBoard);
@@ -199,62 +152,33 @@ int deterministic_backtrack(cell** board, int i, int j) {
 
             free(legalPlays->validPlaysArray);
             free(legalPlays);
-            }
         }
+    }
     free(stck);
     return counter;
 }
 
-void set_fixed_cells(cell **board, int fixedCells) {
+void copy_random_cells(cell **solvedBoard, int copyCells, cell** finalBoard) {
     /*
-     * Randomly chooses given number of cells in the game board and sets them as fixed
+     * Randomly chooses given number of cells and unassign them.
      */
-    int i, randX, randY;
-    for (i = 0; i < fixedCells; i++){
+    int i, colsIndex, rowsIndex;
+    int N = blockCols * blockRows;
+    for (i = 0; i < copyCells; i++){
         while (true) {
-            randX = rand() % NUM_OF_ROWS;
-            randY = rand() % NUM_OF_COLUMNS;
-            if (board[randY][randX].isFixed != true){
-                board[randY][randX].isFixed = true;
+            colsIndex = rand() % N;
+            rowsIndex = rand() % N;
+            if (finalBoard[rowsIndex][colsIndex].number == UNASSIGNED){
+                finalBoard[rowsIndex][colsIndex].number = solvedBoard[rowsIndex][colsIndex].number;
                 break;
             }
         }
-
     }
 }
-
-void generate_solved_board(cell** board, int fixedCells){
-    /*
-     * Generates solved sudoku game board
-     */
-    recursive_backtrack(board, 0, 0);
-    set_fixed_cells(board, fixedCells);
-}
-
-/*void generate_user_board(cell **solved_board, cell** user_board) {
-
-     * Generates unsolved user sudoku game board
-
-    int i,j;
-    for (i=0; i < NUM_OF_ROWS; i++) {
-        for (j=0; j < NUM_OF_COLUMNS; j++) {
-            if (solved_board[i][j].isFixed) {
-                user_board[i][j].number = solved_board[i][j].number;
-                user_board[i][j].isFixed = true;
-            }
-            else{
-                user_board[i][j].number = UNASSIGNED;
-                user_board[i][j].isFixed = false;
-            }
-        }
-    }
-    printBoard(user_board);
-}*/
 
 void send_error(int error, char* str, GRBenv* env){
     printf("ERROR %d %s: %s\n", error, str, GRBgeterrormsg(env));
 }
-
 
 cell** prepare_board_for_gurobi(cell** board) {
     /* Prepares board for Gurobi by fixing its values */
@@ -269,9 +193,9 @@ cell** prepare_board_for_gurobi(cell** board) {
     return resultBoard;
 }
 
-int ILP(cell **board, cell **solvedBoard) {
+bool ILP(cell **board, cell **solvedBoard) {
 
-    cell **auxBoard; 
+    cell **auxBoard;
     int *ind, n, m, N, error, count, i, j, p, t, v, optimstatus;
     GRBenv   *env   = NULL;
     GRBmodel *model = NULL;
@@ -290,7 +214,7 @@ int ILP(cell **board, cell **solvedBoard) {
     lb = (double*) calloc(N*N*N, sizeof(double));
     vtype = (char*) calloc(N*N*N, sizeof(char));
     sol = (double*) calloc(N*N*N, sizeof(double));
-    
+
     /* Create an empty model */
 
     cursor = namestorage;
@@ -313,35 +237,35 @@ int ILP(cell **board, cell **solvedBoard) {
     /* Create environment */
 
     error = GRBloadenv(&env, "sudoku.log");
-    
+
     if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
-        send_error(error, "GRBloadenv", env); 
-        #endif
-        return 0;
-        }
-    
+#ifdef PRINT_GUROBI_ERRORS
+        send_error(error, "GRBloadenv", env);
+#endif
+        return false;
+    }
+
     /* Removes Gurobi prints */
-    
+
     error = GRBsetintparam(env, "OutputFlag", 0);
     if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
         send_error(error, "GRBsetintparam or GRBgetenv", env);
-        #endif
-        return 0;
+#endif
+        return false;
     }
-  
+
     /* Create new model */
 
     error = GRBnewmodel(env, &model, "sudoku", N*N*N, NULL, lb, NULL, vtype, names);
     if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
         send_error(error, "GRBnewmodel", env);
-        #endif
-        return 0;
+#endif
+        return true;
     }
-    
-    
+
+
     /* Each cell gets a value */
 
     for (i = 0; i < N; i++) {
@@ -350,13 +274,13 @@ int ILP(cell **board, cell **solvedBoard) {
                 ind[v] = i*N*N + j*N + v;
                 val[v] = 1.0;
             }
-            
+
             error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
             if (error) {
-                #ifdef PRINT_GUROBI_ERRORS
-                send_error(error, "GRBaddconstr1", env); 
-                #endif
-                return 0;
+#ifdef PRINT_GUROBI_ERRORS
+                send_error(error, "GRBaddconstr1", env);
+#endif
+                return false;
             }
         }
     }
@@ -369,13 +293,13 @@ int ILP(cell **board, cell **solvedBoard) {
                 ind[i] = i*N*N + j*N + v;
                 val[i] = 1.0;
             }
-            
+
             error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
             if (error) {
-                #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
                 send_error(error, "GRBaddconstr2", env);
-                #endif
-                return 0;
+#endif
+                return false;
             }
         }
     }
@@ -391,10 +315,10 @@ int ILP(cell **board, cell **solvedBoard) {
 
             error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
             if (error) {
-                #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
                 send_error(error, "GRBaddconstr3", env);
-                #endif
-                return 0;
+#endif
+                return false;
             }
         }
     }
@@ -412,67 +336,67 @@ int ILP(cell **board, cell **solvedBoard) {
                         count++;
                     }
                 }
-                
+
                 error = GRBaddconstr(model, N, ind, val, GRB_EQUAL, 1.0, NULL);
                 if (error) {
-                    #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
                     send_error(error, "GRBaddconstr4", env);
-                    #endif
-                    return 0;
+#endif
+                    return false;
                 }
             }
         }
     }
-    
+
     /* Optimize model */
 
     error = GRBoptimize(model);
     if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
         send_error(error, "GRBoptimize", env);
-        #endif
-        return 0;
-    }   
+#endif
+        return false;
+    }
 
     /* Capture solution information */
 
     error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
     if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
         send_error(error, "GRBgetintattr", env);
-        #endif
-        return 0;
+#endif
+        return false;
     }
-    
+
     error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
     if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
         send_error(error, "GRBgetdblattr", env);
-        #endif
-        return 0;
+#endif
+        return false;
     }
-    
-    
-    error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, N*N*N, sol);   
+
+
+    error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, N*N*N, sol);
     if (error) {
-        #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
         send_error(error, "GRBgetdblattrarray", env);
-        #endif
-        return 0;
+#endif
+        return false;
     }
-    
-    #ifdef PRINT_GUROBI_ERRORS
+
+#ifdef PRINT_GUROBI_ERRORS
     printf("\nOptimization complete\n");
-    #endif
+#endif
 
     if (optimstatus == GRB_OPTIMAL) {
-        #ifdef PRINT_GUROBI_ERRORS
-        printf("Optimal objective function: %.4e\n", objval);       
-        #endif
+#ifdef PRINT_GUROBI_ERRORS
+        printf("Optimal objective function: %.4e\n", objval);
+#endif
         for (i = 0; i < N; i++) {
             for (j = 0; j < N; j++) {
                 for (v = 0; v < N; v++) {
-                    if (sol[i*N*N + j*N + v] != 0) {     
+                    if (sol[i*N*N + j*N + v] != 0) {
                         solvedBoard[i][j].number = v+1;
                     }
                 }
@@ -480,25 +404,26 @@ int ILP(cell **board, cell **solvedBoard) {
         }
     } else {
         if(optimstatus == GRB_INF_OR_UNBD){
-            #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
             printf("Model is infeasible or unbounded\n");
-            #endif
+#endif
         } else {
-            #ifdef PRINT_GUROBI_ERRORS
+#ifdef PRINT_GUROBI_ERRORS
             printf("Optimization was stopped early\n");
-            #endif
+#endif
         }
     }
 
     /* Free Resources */
-    free(ind); 
-    free(val); 
-    free(lb); 
-    free(vtype); 
-    free(sol); 
-    free(names); 
+    free(ind);
+    free(val);
+    free(lb);
+    free(vtype);
+    free(sol);
+    free(names);
     free(namestorage);
     GRBfreemodel(model);
     GRBfreeenv(env);
-    return 1;
+    return true;
 }
+
