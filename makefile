@@ -25,3 +25,5 @@ solver.o: solver.c solver.h
 
 clean:
 	rm -f $(OBJS) $(EXEC)
+
+all: $(EXEC)
