@@ -33,7 +33,6 @@ void memory_error(char* func){
      * Prints error message
      */
     printf("Error: %s has failed\n", func);
-\
 }
 
 bool is_integer(char *s){

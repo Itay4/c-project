@@ -94,10 +94,10 @@ int main() {
         exit_game(command);
     }
     else if (ferror(stdin)) { /* Error */
-            if (mode != 'I') { /*switching mode from solve to edit*/
-                free_board(board);
-                free_list(movesList);
-            }
+        if (mode != 'I') { /*switching mode from solve to edit*/
+            free_board(board);
+            free_list(movesList);
+        }
         memory_error("main");
         exit_game(command);
     }

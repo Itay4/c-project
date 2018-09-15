@@ -43,7 +43,7 @@ cell **edit_command(char* parsedCommand[4], char mode);
 
 void mark_errors_command(int value);
 
-void save_command(cell **board, char *filePath, char mode);
+void save_command(cell **board, char *filePath);
 
 bool auto_fill(cell **board);
 

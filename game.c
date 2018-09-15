@@ -24,15 +24,13 @@ int count_empty_cells(cell ** board) {
     int N = blockRows * blockCols;
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
-            if (board[i][j].number != UNASSIGNED) {
+            if (board[i][j].number == UNASSIGNED) {
                 counter++;
             }
         }
     }
     return counter;
 }
-
-
 
 void empty_board(cell ** board) {
     /* empty current board by setting all values to unassigned*/
@@ -51,7 +49,7 @@ bool board_is_empty(cell ** board) {
     /*returns true if board is filled only with unassigned values*/
 
     int N = blockRows * blockCols;
-    if (count_empty_cells(board) != N){
+    if (count_empty_cells(board) != N*N){
         return false;
     }
     return true;
@@ -146,8 +144,8 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
         if (cmdExecuted) {
             update_moves_list(board, lst);
         }
-    } else if (strcmp(parsedCommand[0], "save") == 0 && (mode == 'E' || mode == 'S')) {
-        save_command(board, parsedCommand[1], mode);
+    } else if (strcmp(parsedCommand[0], "save") == 0 && counter == 2 && (mode == 'E' || mode == 'S')) {
+        save_command(board, parsedCommand[1]);
     } else if (strcmp(parsedCommand[0], "num_solutions") == 0 && (mode == 'E' || mode == 'S')) {
         num_solutions(board);
     } else if (strcmp(parsedCommand[0], "generate") == 0 && counter == 3 && mode == 'E' ) {
@@ -247,10 +245,11 @@ void validate(cell **board) {
 
 void num_solutions(cell **board) {
     /* Counts the number of solutions of sudoku board */
-    int solutionsCounter = count_solutions(board);
+    int solutionsCounter;
     if (check_board_erroneous(board)) {
         printf(ERRONEOUS_ERROR);
     }
+    solutionsCounter = count_solutions(board);
     printf("Number of solutions: %d\n", solutionsCounter);
     if (solutionsCounter == 1) {
         printf("This is a good board!\n");
@@ -276,7 +275,7 @@ int count_solutions(cell** board) {
     return numOfSolutions;
 }
 
-void save_command(cell **board, char *filePath,char mode) {
+void save_command(cell **board, char *filePath) {
     FILE *fp;
     int i, j, N;
     cell ** copyOfBoard;
@@ -301,7 +300,9 @@ void save_command(cell **board, char *filePath,char mode) {
         printf("Error: File cannot be created or modified\n");
     }
 
-    fprintf(fp, "%d %d\n", blockRows, blockCols);
+    if (fprintf(fp, "%d %d\n", blockRows, blockCols) < 1){
+        exit(0);
+    }
     N = blockRows * blockCols;
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
@@ -326,18 +327,20 @@ void mark_errors_command(int value) {
     }
 }
 
-cell **load_board(FILE* fp, char mode){/*add char mode- in edit need to clear all fixed*/
+cell** load_board(FILE* fp, char mode){/*add char mode- in edit need to clear all fixed*/
     int i, j, N;
     cell **board = NULL;
     char line[257];
     char *token;
     char *delimiter = " \t\r\n";
-    if (fgets(line, 257, fp) != NULL){
-
+    if (fgets(line, 257, fp) != NULL) {
         token = strtok(line, delimiter);
         blockRows = atoi(token);
         token = strtok(NULL, delimiter);
         blockCols = atoi(token);
+    } else {
+        printf("Error: File read failed\n");
+        return NULL;
     }
     N = blockRows * blockCols;
     board = calloc(N, sizeof (*board));
