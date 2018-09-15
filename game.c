@@ -116,7 +116,6 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
      * Evaluates game command (SET/HINT/VALIDATE/RESTART/EXIT) and calls the relavent function to execute it
      */
     bool cmdExecuted = false;
-    cell ** boardAfter;
     if (strcmp(parsedCommand[0], "set") == 0 && counter == 4 && (mode == 'E' || mode == 'S')) {
         if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2])) || (!is_integer(parsedCommand[3]))){
             printf(VALUE_RANGE_ERROR, blockCols * blockRows);
@@ -167,7 +166,7 @@ void execute_command(char *parsedCommand[4], cell **board, char* command, int co
     } else if (((strcmp(parsedCommand[0], "reset") == 0)) && (mode == 'E' || mode == 'S')) {
         reset(lst, board, mode);
     } else if (strcmp(parsedCommand[0], "exit") == 0) {
-        if( mode != 'I' || gameOver) {
+        if (mode != 'I' || gameOver) {
             free_board(board);
             free_list(lst);
         }
@@ -266,7 +265,6 @@ int count_solutions(cell** board) {
     int* unassignedsArray;
     cell** boardCopy = generate_empty_board();
     copy_board(board, boardCopy);
-
     unassignedsArray = get_next_play(boardCopy);
     if (unassignedsArray[0] == -1) {
         free(unassignedsArray);
@@ -549,6 +547,7 @@ bool auto_fill(cell **board)	{
 
         }
     }
+    free_board(copyOfBoard);
     print_board(board, 'E');
     game_over(board);
     return fillFlag;
