@@ -21,13 +21,11 @@ int main() {
     cell** tmpBoard;
     cell **startingBoard;
     list *movesList;
-    int argsCounter, i;
+    int argsCounter, i, tempRows, tempCols, switchRows, switchCols;
     bool invalidCmd = false;
-
     srand(time(NULL));
     printf("Sudoku\n------\n");
     printf("Enter your command:\n");
-
     while (fgets(command, MAX_CMD_SIZE + 2, stdin) != NULL) {
         if (!strchr(command, '\n')) {
             while (!strchr(command, '\n')  && fgets(command, MAX_CMD_SIZE + 2, stdin));
@@ -37,15 +35,22 @@ int main() {
         }
         argsCounter = parseCommand(command, parsedCommand);
         tmpBoard = NULL;
-
         /*put all beneath in function match cmd*/
         if (parsedCommand[0] == NULL) {/*Handles blank line*/
         } else if (strcmp(parsedCommand[0], "solve") == 0 && !invalidCmd) {
+            tempRows = blockRows;
+            tempCols = blockCols;
             tmpBoard = solve_command(parsedCommand, 'S');
-            if (tmpBoard != NULL) { /*solve succeeded*/
-                if (mode != 'I' || gameOver) { /*switching mode from edit to solve*/
+            if (tmpBoard != NULL) { /* solve succeeded */
+                if (mode != 'I' || gameOver) { /* switching mode from edit to solve */
+                    switchRows = blockRows;
+                    switchCols = blockCols;
+                    blockRows = tempRows;
+                    blockCols = tempCols;
                     free_board(board);
                     free_list(movesList);
+                    blockRows = switchRows;
+                    blockCols = switchCols;
                 }
                 mode = 'S';
                 board = NULL;
@@ -59,11 +64,19 @@ int main() {
                 movesList = create_list(startingBoard);
             }
         } else if (strcmp(parsedCommand[0], "edit") == 0 && !invalidCmd) {
+            tempRows = blockRows;
+            tempCols = blockCols;
             tmpBoard = edit_command(parsedCommand, 'E');
-            if (tmpBoard != NULL) { /*edit succeeded*/
-                if (mode != 'I' || gameOver) { /*switching mode from solve to edit*/
+            if (tmpBoard != NULL) { /*edit succeeded*//*switching mode from solve to edit*/
+                if (mode != 'I' || gameOver) { 
+                    switchRows = blockRows;
+                    switchCols = blockCols;
+                    blockRows = tempRows;
+                    blockCols = tempCols;
                     free_board(board);
                     free_list(movesList);
+                    blockRows = switchRows;
+                    blockCols = switchCols;
                 }
                 mode = 'E';
                 board = NULL;
@@ -101,7 +114,5 @@ int main() {
         memory_error("main");
         exit_game(command);
     }
-
-
     return 0;
 }
