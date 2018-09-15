@@ -1,16 +1,25 @@
+/** @file game.c
+ *  @brief game source file.
+ *
+ *  This module encapsulates the Sudoku puzzle game and the Sudoku board.
+ *  Includes functions to match all commands available as a user (player) input.
+ *  Includes auxiliary functions that are relevant to the game board state or the game mode.
+ *
+ *  @author Itay Keren (itaykeren)
+ *  @author Rotem Bar (rotembar)
+ *
+ */
 #define _GNU_SOURCE
+
+/* -- Includes -- */
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <time.h>
 #include <unistd.h>
 #include "main_aux.h"
-#include "parser.h"
 #include "solver.h"
-#include "game.h"
-#include "stack.h"
 #include "linked_list.h"
-#include <unistd.h>
+#include "game.h"
+#include <string.h>
 
 extern int blockRows;
 extern int blockCols;
@@ -290,8 +299,8 @@ void save_command(cell **board, char *filePath) {
         solvable = ILP(board,copyOfBoard);
         free_board(copyOfBoard);
         if (solvable == false) {
-              printf("Error: board validation failed\n");
-              return;
+            printf("Error: board validation failed\n");
+            return;
         }
 
     }
@@ -490,9 +499,7 @@ void game_over(cell **board){
     bool full = true;
     cell** copyBoard;
     int N = blockCols * blockRows;
-    if (check_board_erroneous(board)){
-        return;
-    }
+
     for (col = 0; col < N; col++) {
         for (row = 0; row < N; row++) {
             if (board[row][col].number == UNASSIGNED) {
@@ -678,10 +685,10 @@ void hint(cell **board, int column, int row){
         return;
     }
     else{
-         hint = solvedBoard[row - 1][column - 1].number;
-         printf("Hint: set cell to %d\n", hint);
-         free_board(solvedBoard);
-        }
+        hint = solvedBoard[row - 1][column - 1].number;
+        printf("Hint: set cell to %d\n", hint);
+        free_board(solvedBoard);
+    }
 }
 
 void free_board(cell** board){
@@ -730,7 +737,7 @@ bool fill_cell(cell** board, int column, int row){
         if (numbersLeft > 0) {
             delFromArr(randomIndex, numbersLeft, availableNumbers);
         }
-}
+    }
     free_board(copyOfBoard);
     free(availableNumbers);
     return false;
