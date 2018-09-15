@@ -13,6 +13,10 @@ void push(int* data, cell** board, stack* stck) {
     /* Pushes an element to top of stack*/
     element *e = NULL;
     e = (element*) (malloc(sizeof(element)));
+    if (e == NULL) {
+        memory_error("Memory allocation failed\n");
+        exit(0);
+    }
     e->data = data;
     e->board = board;
     e->next = stck->top;

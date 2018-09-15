@@ -23,6 +23,10 @@ int main() {
     list *movesList;
     int argsCounter, i, tempRows, tempCols, switchRows, switchCols;
     bool invalidCmd = false;
+    if (command == NULL) {
+        memory_error("Memory allocation failed\n");
+        exit(0);
+    }
     srand(time(NULL));
     printf("Sudoku\n------\n");
     printf("Enter your command:\n");

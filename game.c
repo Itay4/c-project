@@ -70,8 +70,16 @@ cell** generate_empty_board(){
     cell **board = NULL;
     N =  blockRows * blockCols;
     board = calloc(N, sizeof (*board));
+    if (board == NULL) {
+        memory_error("Memory allocation failed\n");
+        exit(0);
+    }
     for (i = 0; i < N; i++) {
         board[i] = calloc(N, sizeof (**board));
+        if (board[i] == NULL) {
+            memory_error("Memory allocation failed\n");
+            exit(0);
+        }
     }
     empty_board(board);
     return board;
@@ -353,8 +361,16 @@ cell** load_board(FILE* fp, char mode){/*add char mode- in edit need to clear al
     }
     N = blockRows * blockCols;
     board = calloc(N, sizeof (*board));
+    if (board == NULL) {
+        memory_error("Memory allocation failed\n");
+        exit(0);
+    }
     for (i = 0; i < N; i++) {
         board[i] = calloc(N, (sizeof **board));
+        if (board[i] == NULL) {
+            memory_error("Memory allocation failed\n");
+            exit(0);
+        }
     }
     for (i = 0; i < N; i++) {
         fgets(line, 256, fp);
@@ -521,7 +537,7 @@ void game_over(cell **board){
     }
 }
 
-bool auto_fill(cell **board)	{
+bool auto_fill(cell **board)    {
     /*
      * Autofills cells which contain a single legal value
      */
