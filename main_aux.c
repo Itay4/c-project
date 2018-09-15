@@ -11,10 +11,13 @@ void delFromArr(int position, int numbersLeft, int* availableNumbers) {
     /*
      * Simulates deletion of elemnt in given position in array by shifting left elements
      */
-
     int i = 0;
     int j;
-    int * tmpArray = malloc(numbersLeft * sizeof(int));
+    int* tmpArray = malloc(numbersLeft * sizeof(int));
+    if (tmpArray == NULL) {
+        memory_error("Memory allocation failed\n");
+        exit(0);
+    }
     for ( j = 0; j < numbersLeft + 1; j++ ){
         if (j != position) {
             tmpArray[i] = availableNumbers[j];
@@ -24,7 +27,6 @@ void delFromArr(int position, int numbersLeft, int* availableNumbers) {
     for ( j = 0; j < numbersLeft; j++ ){
         availableNumbers[j] = tmpArray[j];
         }
-
     free(tmpArray);
 }
 
@@ -75,8 +77,12 @@ bool valid_set_value(int val, int N){
 
 int* get_next_play(cell** board) {
     /* Returns an array representing next empty unassigned cell position */
-    int* auxArray = (int*) calloc(2, sizeof(int));
     int i, j, N;
+    int* auxArray = (int*) calloc(2, sizeof(int));
+    if (auxArray == NULL) {
+        memory_error("Memory allocation failed\n");
+        exit(0);
+    }
     auxArray[0] = -1;
     auxArray[1] = -1;
     N = blockRows * blockCols;
@@ -96,9 +102,12 @@ int* generate_int_array(int maxVal) {
     int* array;
     int i;
     array = malloc(maxVal * sizeof(int));
+    if (array == NULL) {
+        memory_error("Memory allocation failed\n");
+        exit(0);
+    }
     for (i = 1; i < maxVal + 1; i++){
        array[i-1] = i;
     }
     return array;
 }
-

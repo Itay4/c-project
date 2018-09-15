@@ -9,6 +9,10 @@
 
 node* create_node(cell** board) {
     node* newNode = malloc(sizeof(node));
+    if (newNode == NULL) {
+        memory_error("Memory allocation failed\n");
+        exit(0);
+    }
     newNode->board = board;
     newNode->prev = NULL;
     newNode->next = NULL;
@@ -17,6 +21,10 @@ node* create_node(cell** board) {
 
 list* create_list(cell** board) {
     list* lst = malloc(sizeof(list));
+    if (lst == NULL) {
+        memory_error("Memory allocation failed\n");
+        exit(0);
+    }
     lst->head = create_node(board);
     lst->tail = NULL;
     lst->current = lst->head;
