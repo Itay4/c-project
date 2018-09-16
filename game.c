@@ -116,7 +116,12 @@ bool val_in_block(cell** board, int column, int row, int val){
             else if (board[rowIndex][colIndex].number == val) {
                 valExist = true;
                 if (board[row - 1][colIndex].isFixed == false) { /* only marking unfixed cells */
-                    board[row - 1][colIndex].asterisk = true;
+                    if (val != UNASSIGNED) {
+                        board[row - 1][colIndex].asterisk = true;
+                    }
+                    if (val == UNASSIGNED) {
+                        board[row - 1][colIndex].asterisk = false;                      
+                    }
                 }
             }
         }
@@ -136,7 +141,12 @@ bool val_in_row(cell** board, int column, int row, int val){
         else if (board[row - 1][colIndex].number == val) {
             valExist = true;
             if (board[row - 1][colIndex].isFixed == false) { /* only marking unfixed cells */
-                board[row - 1][colIndex].asterisk = true;
+                if (val != UNASSIGNED) {
+                    board[row - 1][colIndex].asterisk = true;
+                }
+                if (val == UNASSIGNED) {
+                    board[row - 1][colIndex].asterisk = false;        
+                }
             }
         }
     }
@@ -146,16 +156,21 @@ bool val_in_row(cell** board, int column, int row, int val){
 /* returns true if given value is in the sudoku board's given column,
  * else returns false.
  * if encounters within the column in a cell containing the given value, it marks it with an asterisk */
-bool val_in_column(cell** board, int column, int row, int val){
+bool val_in_column(cell** board, int column, int row, int val) {
     int N = blockRows * blockCols;
     bool valExist = false;
     int rowIndex;
     for (rowIndex = 0; rowIndex < N; rowIndex++) {
-        if(rowIndex == row - 1){ /* skips check for the cell about to change */ }
+        if (rowIndex == row - 1) { /* skips check for the cell about to change */ }
         else if (board[rowIndex][column - 1].number == val) {
             valExist = true;
             if (board[rowIndex][column - 1].isFixed == false) { /* only marking unfixed cells */
-                board[rowIndex][column - 1].asterisk = true;
+                if (val != UNASSIGNED) {
+                    board[rowIndex][column - 1].asterisk = true;
+                }
+                if (val == UNASSIGNED) {
+                    board[rowIndex][column - 1].asterisk = false;               
+                }
             }
         }
     }
@@ -168,13 +183,17 @@ bool val_in_column(cell** board, int column, int row, int val){
  * if value is invalid it marks it with an asterisk */
 bool valid_check(cell** board, int column, int row, int val) {
     if(val_in_block(board, column, row, val) | val_in_row(board, column, row, val) | val_in_column(board, column, row, val)){
-        board[row - 1][column - 1].asterisk = true;
-        return false;
+        if (val != UNASSIGNED) {
+            board[row - 1][column - 1].asterisk = true;
+            return false;
+        }
+        if (val == UNASSIGNED) {
+            board[row - 1][column - 1].asterisk = false;
+            return true;
+        }
     }
-    else{
         board[row - 1][column - 1].asterisk = false;
         return true;
-    }
 }
 
 /* marks all cells in the sudoku board that contains invalid values according to game rules with an asterisk */
