@@ -120,8 +120,7 @@ bool val_in_block(cell** board, int column, int row, int val){
                         board[row - 1][colIndex].asterisk = true;
                     }
                     if (val == UNASSIGNED) {
-                        board[row - 1][colIndex].asterisk = false;
-                        return false;
+                        board[row - 1][colIndex].asterisk = false;                      
                     }
                 }
             }
@@ -146,8 +145,7 @@ bool val_in_row(cell** board, int column, int row, int val){
                     board[row - 1][colIndex].asterisk = true;
                 }
                 if (val == UNASSIGNED) {
-                    board[row - 1][colIndex].asterisk = false;
-                    return false;
+                    board[row - 1][colIndex].asterisk = false;        
                 }
             }
         }
@@ -171,8 +169,7 @@ bool val_in_column(cell** board, int column, int row, int val) {
                     board[rowIndex][column - 1].asterisk = true;
                 }
                 if (val == UNASSIGNED) {
-                    board[rowIndex][column - 1].asterisk = false;
-                    return false;
+                    board[rowIndex][column - 1].asterisk = false;               
                 }
             }
         }
