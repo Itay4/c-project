@@ -1,16 +1,29 @@
+/** @file main_aux.c
+ *  @brief main_aux source file.
+ *
+ *  This module contains auxiliary functions to be used in other modules.
+ *
+ *  @author Itay Keren (itaykeren)
+ *  @author Rotem Bar (rotembar)
+ *
+ */
+
+/* -- Includes -- */
 #include "main_aux.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 
+/* -- Global Variables  -- */
 extern int blockRows;
 extern int blockCols;
-extern int mark_errors;
+extern int markErrors;
+extern char mode;
+extern bool gameOver;
 
+
+/* Simulates deletion of an element in given position in an int pointer. */
 void delFromArr(int position, int numbersLeft, int* availableNumbers) {
-    /*
-     * Simulates deletion of elemnt in given position in array by shifting left elements
-     */
     int i = 0;
     int j;
     int* tmpArray = malloc(numbersLeft * sizeof(int));
@@ -30,14 +43,13 @@ void delFromArr(int position, int numbersLeft, int* availableNumbers) {
     free(tmpArray);
 }
 
+/* Prints error message */
 void memory_error(char* func){
-    /*
-     * Prints error message
-     */
     printf("Error: %s has failed\n", func);
 }
 
-bool is_integer(char *s){
+/* returns true if s can be converted to int, else returns false */
+bool is_integer(char* s){
     char * t;
     for (t = s; *t != '\0'; t++) {
         if (*t == '.' || isalpha(*t)) {
@@ -47,6 +59,7 @@ bool is_integer(char *s){
     return true;
 }
 
+/* returns an int representing corresponding starting block column index that matches given column */
 int get_block_col_index(int column){
     int initialCol;
     int blockNumberCols = 1 + ((column - 1) / blockCols);
@@ -54,6 +67,7 @@ int get_block_col_index(int column){
     return initialCol;
 }
 
+/* returns an int representing corresponding starting block row index that matches given row */
 int get_block_row_index(int row){
     int initialRow;
     int blockNumberRows = 1 + ((row - 1) / blockRows);
@@ -61,6 +75,7 @@ int get_block_row_index(int row){
     return initialRow;
 }
 
+/* returns true if index is between 1-N (including), else returns false */
 bool valid_board_index(int index, int N){
     if (index < 1 || index > N ) {
         return false;
@@ -68,6 +83,7 @@ bool valid_board_index(int index, int N){
     return true;
 }
 
+/* Returns true if index is between 0-N (including), else returns false */
 bool valid_set_value(int val, int N){
     if (val < 0 || val > N ) {
         return false;
@@ -75,8 +91,8 @@ bool valid_set_value(int val, int N){
     return true;
 }
 
+/* Returns an array representing next empty unassigned cell position */
 int* get_next_play(cell** board) {
-    /* Returns an array representing next empty unassigned cell position */
     int i, j, N;
     int* auxArray = (int*) calloc(2, sizeof(int));
     if (auxArray == NULL) {
@@ -98,6 +114,7 @@ int* get_next_play(cell** board) {
     return auxArray;
 }
 
+/* generates an int pointer to represent an int array containg values from 1-maxVal */
 int* generate_int_array(int maxVal) {
     int* array;
     int i;

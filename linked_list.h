@@ -24,7 +24,7 @@
  * node contains next field to point on next node (move) on linked list (moves list) a potential redo move.
  * node contains prev field to point on prev node (move) on linked list (moves list) a potential undo move.
  * if there are no prev or next nodes fields point to NULL.
- * Detailed explanation.
+ *
  */
 typedef struct node {
     cell** board;

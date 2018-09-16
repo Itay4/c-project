@@ -10,8 +10,6 @@
  */
 
 /* -- Includes -- */
-
-
 #include "stack.h"
 #include "main_aux.h"
 #include <stdio.h>

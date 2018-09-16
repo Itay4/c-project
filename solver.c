@@ -10,21 +10,25 @@
  */
 
 /* -- Includes -- */
-
+#include "solver.h"
+#include "main_aux.h"
+#include "gurobi_c.h"
+#include "game.h"
+#include "stack.h"
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-#include "main_aux.h"
-#include "game.h"
-#include "stack.h"
 #include <string.h>
-#include "gurobi_c.h"
 
+
+/* -- Structs -- */
 /**
- * @brief validPlays structure representing the valid plays in a sudoku board.
- * validPlays contains validPlaysArray field which is an array of the valid plays.
- * validPlays contains numOfPlays field which indicates the number of valid plays.
+ * @brief cell structure representing a sudoku board cell.
+ * cell contains number field containing cell value.
+ * cell contains isFixed field containing true if cell is fixed, else false.
+ * cell contains asterisk field containing true if cell value is invalid, else false.
+ *
  */
 typedef struct validPlays {
     int* validPlaysArray;
@@ -110,7 +114,6 @@ validPlays* get_valid_plays(cell** board, int i, int j) {
 
 /* Duplicates sudoku board */
 cell** duplicate_board(cell** oldBoard) {
-    /* Duplicates sudoku board */
     cell** newBoard;
     newBoard = generate_empty_board();
     copy_board(oldBoard, newBoard);
@@ -195,7 +198,7 @@ int deterministic_backtrack(cell** board, int i, int j) {
 
 /* Randomly chooses given number of cells and unassign them. */
 void copy_random_cells(cell **solvedBoard, int copyCells, cell** finalBoard) {
-    
+
     int i, colsIndex, rowsIndex;
     int N = blockCols * blockRows;
     for (i = 0; i < copyCells; i++){
