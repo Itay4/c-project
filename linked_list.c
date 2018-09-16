@@ -7,6 +7,7 @@
 #include "game.h"
 #include "parser.h"
 
+
 node* create_node(cell** board) {
     node* newNode = malloc(sizeof(node));
     if (newNode == NULL) {
@@ -34,7 +35,7 @@ list* create_list(cell** board) {
 void delete_next_nodes(node* newTail, list* lst) {
     node* currentToDel;
     if (newTail == NULL){
-        return; 
+        return;
     }
     currentToDel = lst->current->next;
     newTail->next = NULL;

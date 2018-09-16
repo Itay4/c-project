@@ -18,6 +18,3 @@ int parseCommand(char* command, char* parsedCommand[]) {
     }
     return i;
 }
-
-
-

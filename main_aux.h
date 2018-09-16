@@ -2,6 +2,7 @@
 #ifndef SUDOKU90_MAIN_AUX_H
 #define SUDOKU90_MAIN_AUX_H
 
+
 extern int blockRows;
 extern int blockCols;
 extern int markErrors;
@@ -45,5 +46,6 @@ bool valid_set_value(int val, int N);
 int* get_next_play(cell** board);
 
 int * generate_int_array(int maxVal);
+
 
 #endif /*SUDOKU90_MAIN_AUX_H*/

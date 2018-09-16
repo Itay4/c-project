@@ -1,62 +1,88 @@
+/** @file game.h
+ *  @brief game header file.
+ *
+ *  This header contains the prototypes for the game module.
+ *
+ *  @author Itay Keren (itaykeren)
+ *  @author Rotem Bar (rotembar)
+ *
+ */
+
+#ifndef SUDOKU_GAME_H
+#define SUDOKU_GAME_H
+
+/* -- Includes -- */
 #include "linked_list.h"
 #include "main_aux.h"
 
-#ifndef SUDOKU90_GAME_H
-#define SUDOKU90_GAME_H
+
+/** @brief Returns a new empty sudoku board of the appropriate size.
+ *  @return an empty sudoku board
+ */
+cell** generate_empty_board();
 
 
-void empty_board(cell ** board);
+/** @brief Copies a given sudoku board.
+ *  @param source_board to be copied, remains unchanged.
+ *  @param new_board to which source_board will be copied.
+ *  @return void.
+ */
+void copy_board(cell** source_board, cell** new_board);
 
-cell **generate_empty_board();
 
-void copy_board(cell **source_board, cell **new_board);
+/** @brief Prints a given sudoku board.
+ *  @param board to be printed.
+ *  @param mode game mode to print board according to relevant restrictions.
+ *  @return void.
+ */
+void print_board(cell** board, char mode);
 
-void print_board(cell **board, char mode);
 
-void update_moves_list(cell** board, list *lst);
+/** @brief Returns and prints sudoku board to be edited in edit mode (loaded from file or newly 9X9 generated)
+ *  returns NULL if function fails.
+ *  @param parsedCommand after user input was parsed.
+ *  @param mode game mode to print boart according to relevant restrictions.
+ *  @return sudoku board.
+ */
+cell** edit_command(char* parsedCommand[4], char mode);
 
-void execute_command(char *parsedCommand[4], cell **board, char* command, int counter, char mode, list *lst);
 
-void game_over(cell **board);
+/** @brief Returns and prints sudoku board to be solved in solve mode (loaded from file)
+ *  returns NULL if function fails.
+ *  @param parsedCommand after user input was parsed.
+ *  @param mode game mode to print board according to relevant restrictions.
+ *  @return sudoku board.
+ */
+cell** solve_command(char* parsedCommand[4], char mode);
 
-bool val_in_column(cell **board, int column, int row, int val);
 
-bool val_in_row(cell **board, int column, int row, int val);
-
-bool val_in_block(cell **board, int column, int row, int val);
-
-bool valid_check(cell **board, int column, int row, int val);
-
-bool set(cell **board, int column, int row, int val, char mode);
-
-void validate(cell **board);
-
-bool check_board_erroneous(cell **board);
-
-bool validate_risks(cell **board, int column, int row);
-
-void hint(cell **board, int column, int row);
-
-cell **solve_command(char* parsedCommand[4], char mode);
-
-cell **edit_command(char* parsedCommand[4], char mode);
-
-void mark_errors_command(int value);
-
-void save_command(cell **board, char *filePath);
-
-bool auto_fill(cell **board);
-
-void num_solutions(cell **board);
-
-int count_solutions(cell **board);
-
+/** @brief frees allocated memory of given sudoku board
+ *  @param board sudoku board to be free.
+ *  @return void.
+ */
 void free_board(cell** board);
 
+
+/** @brief frees given command and exists the game
+ *  @param command to be free.
+ *  @return void.
+ */
 void exit_game(char* command);
 
-bool generate_randomized_solved_board (cell** board, int initialFullCells, int finalFixedCells);
+
+/** @brief  executes user-entered game command.
+ *  prints appropriate massages and updating board and moves list when required.
+ *  @param parsedCommand after user input was parsed.
+ *  @param board sudoku board to be updated.
+ *  @param user command.
+ *  @param counter  amount of cells filled with values parsedCommand.
+ *  @param mode game mode to executes game commands according to relevant restrictions.
+ *  @param lst moves list to be updated after a move which changed board status.
+ *  @return void
+ */
+void execute_command(char* parsedCommand[4], cell** board, char* command, int counter, char mode, list* lst);
 
 
 
-#endif /*SUDOKU90_GAME_H*/
+
+#endif /*SUDOKU_GAME_H*/
