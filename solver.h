@@ -1,5 +1,5 @@
 #include <time.h>
-
+#include "main_aux.h"
 #ifndef SUDOKU90_SOLVER_H
 #define SUDOKU90_SOLVER_H
 

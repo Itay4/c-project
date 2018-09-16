@@ -72,7 +72,7 @@ int main() {
             tempCols = blockCols;
             tmpBoard = edit_command(parsedCommand, 'E');
             if (tmpBoard != NULL) { /*edit succeeded*//*switching mode from solve to edit*/
-                if (mode != 'I' || gameOver) { 
+                if (mode != 'I' || gameOver) {
                     switchRows = blockRows;
                     switchCols = blockCols;
                     blockRows = tempRows;

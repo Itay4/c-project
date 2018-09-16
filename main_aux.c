@@ -26,7 +26,7 @@ void delFromArr(int position, int numbersLeft, int* availableNumbers) {
     }
     for ( j = 0; j < numbersLeft; j++ ){
         availableNumbers[j] = tmpArray[j];
-        }
+    }
     free(tmpArray);
 }
 
@@ -107,7 +107,7 @@ int* generate_int_array(int maxVal) {
         exit(0);
     }
     for (i = 1; i < maxVal + 1; i++){
-       array[i-1] = i;
+        array[i-1] = i;
     }
     return array;
 }

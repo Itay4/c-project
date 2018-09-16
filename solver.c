@@ -35,8 +35,8 @@ validPlays* get_valid_plays(cell** board, int i, int j) {
     counter = 0;
     plays = calloc(N+1, sizeof(int));
     if (plays == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     for (k = 0; k < N; k++) {
         value = get_actual_value(board, k, j);
@@ -67,8 +67,8 @@ validPlays* get_valid_plays(cell** board, int i, int j) {
     }
     legalPlays = calloc(counter, sizeof(int));
     if (legalPlays == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     l = 0;
     for (k = 1; k < N+1; k++) {
@@ -79,8 +79,8 @@ validPlays* get_valid_plays(cell** board, int i, int j) {
     }
     result = (validPlays*) malloc(sizeof(validPlays));
     if (result == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     result->validPlaysArray = legalPlays;
     result->numOfPlays = counter;
@@ -88,17 +88,11 @@ validPlays* get_valid_plays(cell** board, int i, int j) {
     return result;
 }
 
-cell** duplicate_board(cell** oldBoard) { /*TODO: ADD COPY INSIDE AND MOVE TO GAME AND THEN FIXE CODE WITH GENERATE */
+cell** duplicate_board(cell** oldBoard) {
     /* Duplicates sudoku board */
     cell** newBoard;
-    int N, i, j;
-    N = blockRows * blockCols;
     newBoard = generate_empty_board();
-    for (i = 0; i < N; i++){
-        for (j = 0; j < N; j++) {
-            newBoard[i][j].number = oldBoard[i][j].number;
-        }
-    }
+    copy_board(oldBoard, newBoard);
     return newBoard;
 }
 
@@ -112,8 +106,8 @@ int deterministic_backtrack(cell** board, int i, int j) {
     cell **auxBoard, **finalBoard;
     stack* stck = calloc(1,sizeof(stack));
     if (stck == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     N = blockRows * blockCols;
     stack_initialize(stck);
@@ -130,7 +124,7 @@ int deterministic_backtrack(cell** board, int i, int j) {
             nextJ = data[1];
             newI = data[0];
             newJ = data[1];
-			free(e);
+            free(e);
         } else {
             auxBoard = duplicate_board(e->board);
             nextI = auxData[0];
@@ -138,8 +132,8 @@ int deterministic_backtrack(cell** board, int i, int j) {
             newI = auxData[0];
             newJ = auxData[1];
             free_board(e->board);
-			free(auxData);
-			free(e);
+            free(auxData);
+            free(e);
         }
         legalPlays = (validPlays*) get_valid_plays(auxBoard, newI, newJ);
         do {
@@ -159,15 +153,15 @@ int deterministic_backtrack(cell** board, int i, int j) {
             for (k = 0; k < (legalPlays->numOfPlays); k++){
                 auxData = calloc(2,sizeof(int));
                 if (auxData == NULL) {
-			    	memory_error("Memory allocation failed\n");
-			    	exit(0);
-			    }
+                    memory_error("Memory allocation failed\n");
+                    exit(0);
+                }
                 finalBoard = duplicate_board(auxBoard);
                 finalBoard[newI][newJ].number = (legalPlays->validPlaysArray)[k];
                 auxData[0] = nextI;
                 auxData[1] = nextJ;
                 push(auxData, finalBoard, stck);
-            }            
+            }
             free(legalPlays->validPlaysArray);
             free(legalPlays);
         }
@@ -227,38 +221,38 @@ bool ILP(cell **board, cell **solvedBoard) {
     auxBoard = prepare_board_for_gurobi(board);
     names = (char**) calloc(N*N*N, sizeof(char*));
     if (names == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     namestorage = (char*) calloc(20*N*N*N, sizeof(char));
     if (namestorage == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     ind = (int*) calloc(N*N*N, sizeof(int));
     if (ind == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     val = (double*) calloc(N*N*N, sizeof(double));
     if (val == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     lb = (double*) calloc(N*N*N, sizeof(double));
     if (lb == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     vtype = (char*) calloc(N*N*N, sizeof(char));
     if (vtype == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     sol = (double*) calloc(N*N*N, sizeof(double));
     if (sol == NULL) {
-    	memory_error("Memory allocation failed\n");
-    	exit(0);
+        memory_error("Memory allocation failed\n");
+        exit(0);
     }
     /* Create an empty model */
     cursor = namestorage;
@@ -280,13 +274,13 @@ bool ILP(cell **board, cell **solvedBoard) {
     /* Create environment */
     error = GRBloadenv(&env, "sudoku.log");
     if (error) {
-    	send_error(error, "GRBloadenv", env);
+        send_error(error, "GRBloadenv", env);
         return false;
     }
     /* Removes Gurobi prints */
     error = GRBsetintparam(env, "OutputFlag", 0);
     if (error) {
-	    send_error(error, "GRBsetintparam or GRBgetenv", env);
+        send_error(error, "GRBsetintparam or GRBgetenv", env);
         return false;
     }
     /* Create new model */
