@@ -1,3 +1,16 @@
+/** @file solve.c
+ *  @brief solve source file.
+ *
+ *  This module implements different methods to solve sudoku game.
+ *  Includes functions required to solve sudoku board.
+ *
+ *  @author Itay Keren (itaykeren)
+ *  @author Rotem Bar (rotembar)
+ *
+ */
+
+/* -- Includes -- */
+
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -13,8 +26,9 @@ typedef struct validPlays {
     int numOfPlays;
 } validPlays;
 
+
+/* Returns the actual value of a cell in the sudoku board */
 int get_actual_value(cell** board, int i, int j) {
-    /* Gets the actual value of cell */
     int value = board[i][j].number;
     int N = blockRows * blockCols;
     if (value < 0) {
@@ -26,6 +40,7 @@ int get_actual_value(cell** board, int i, int j) {
     return value;
 }
 
+/* Returns the number of valid moves from given indices based on given sudoku board */
 validPlays* get_valid_plays(cell** board, int i, int j) {
     int* plays;
     int* legalPlays;
@@ -88,6 +103,7 @@ validPlays* get_valid_plays(cell** board, int i, int j) {
     return result;
 }
 
+/* Duplicates sudoku board */
 cell** duplicate_board(cell** oldBoard) {
     /* Duplicates sudoku board */
     cell** newBoard;
@@ -96,8 +112,8 @@ cell** duplicate_board(cell** oldBoard) {
     return newBoard;
 }
 
+/* Counts number of solutions using exhaustive deterministic backtrack based on recurive stack */
 int deterministic_backtrack(cell** board, int i, int j) {
-    /* Counts number of solutions using exhaustive deterministic backtrack */
     element* e;
     int counter=0, firstPlay=0, N, k, nextI, nextJ, newI, newJ;
     int data[2];
@@ -172,10 +188,9 @@ int deterministic_backtrack(cell** board, int i, int j) {
     return counter;
 }
 
+/* Randomly chooses given number of cells and unassign them. */
 void copy_random_cells(cell **solvedBoard, int copyCells, cell** finalBoard) {
-    /*
-     * Randomly chooses given number of cells and unassign them.
-     */
+    
     int i, colsIndex, rowsIndex;
     int N = blockCols * blockRows;
     for (i = 0; i < copyCells; i++){
@@ -190,12 +205,13 @@ void copy_random_cells(cell **solvedBoard, int copyCells, cell** finalBoard) {
     }
 }
 
+/* Prints errors raised by Gurobi module */
 void send_error(int error, char* str, GRBenv* env){
     printf("ERROR %d %s: %s\n", error, str, GRBgeterrormsg(env));
 }
 
+/* Prepares board for Gurobi by fixing its values */
 cell** prepare_board_for_gurobi(cell** board) {
-    /* Prepares board for Gurobi by fixing its values */
     int i, j, N;
     cell** resultBoard= generate_empty_board();
     N = blockRows * blockCols;
@@ -207,6 +223,7 @@ cell** prepare_board_for_gurobi(cell** board) {
     return resultBoard;
 }
 
+/* Checks if sudoku board is feasible by ILP algorithm using Gurobi */
 bool ILP(cell **board, cell **solvedBoard) {
     cell **auxBoard;
     int *ind, n, m, N, error, count, i, j, p, t, v, optimstatus;

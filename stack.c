@@ -1,16 +1,30 @@
+/** @file stack.c
+ *  @brief stack source file.
+ *
+ *  This module implements stack data structure.
+ *  Includes basic functions required to maintain a stack.
+ *
+ *  @author Itay Keren (itaykeren)
+ *  @author Rotem Bar (rotembar)
+ *
+ */
+
+/* -- Includes -- */
+
+
 #include "stack.h"
 #include "main_aux.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Initializes a stack */
 void stack_initialize(stack* stck ) {
-    /* Initializes a stack */
     stck->counter = 0;
     stck->top = NULL;
 }
 
+/* Pushes an element to the top of stack by changing pointers and increasing counter*/
 void push(int* data, cell** board, stack* stck) {
-    /* Pushes an element to top of stack*/
     element *e = NULL;
     e = (element*) (malloc(sizeof(element)));
     if (e == NULL) {
@@ -24,8 +38,8 @@ void push(int* data, cell** board, stack* stck) {
     stck->counter++;
 }
 
+/* Gets the stack top elemnent data by fetching it and decreasing the counter */
 element* pop(stack* stck) {
-    /* Gets the stack top elemnent data */
     element *e = NULL;
     e = stck->top;
     stck->top = stck->top->next;
