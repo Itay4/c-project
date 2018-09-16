@@ -813,7 +813,7 @@ void execute_command(char* parsedCommand[4], cell** board, char* command, int co
         num_solutions(board);
     } else if (strcmp(parsedCommand[0], "generate") == 0 && counter >= 3 && mode == 'E' ) {
         if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2]))){
-            printf(VALUE_RANGE_ERROR, N);
+            printf(VALUE_RANGE_ERROR, count_empty_cells(board););
             return;
         }
         cmdExecuted = generate_randomized_solved_board(board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
