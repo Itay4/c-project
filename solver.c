@@ -24,11 +24,9 @@
 
 /* -- Structs -- */
 /**
- * @brief cell structure representing a sudoku board cell.
- * cell contains number field containing cell value.
- * cell contains isFixed field containing true if cell is fixed, else false.
- * cell contains asterisk field containing true if cell value is invalid, else false.
- *
+ * @brief validPlays structure representing a sudoku board cell.
+ * validPlays contains validPlaysArray field which conatins an array of the valid plays in a sudoku board.
+ * validPlays contains numOfPlays field which indicates to the number of valid plays.
  */
 typedef struct validPlays {
     int* validPlaysArray;
