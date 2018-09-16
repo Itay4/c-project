@@ -549,7 +549,7 @@ bool auto_fill(cell** board)    {
     cell** copyOfBoard;
     int N = blockRows * blockCols;
     if (check_board_erroneous(board)){
-        printf("Error: board contains erroneous values\n");
+        printf(ERRONEOUS_ERROR);
         return false;
     }
     copyOfBoard = generate_empty_board();
@@ -633,7 +633,7 @@ void hint(cell** board, int column, int row){
         return;
     }
     if (check_board_erroneous(board)) {
-        printf("Error: board contains erroneous values\n");
+        printf(ERRONEOUS_ERROR);
         return;
     }
     if (board[row - 1][column - 1].isFixed) {
