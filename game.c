@@ -788,7 +788,7 @@ void execute_command(char* parsedCommand[4], cell** board, char* command, int co
         }
     } else if (strcmp(parsedCommand[0], "hint") == 0 && counter >= 3 && mode == 'S') {
         if ((!is_integer(parsedCommand[1])) || (!is_integer(parsedCommand[2]))){
-            printf(VALUE_RANGE_ERROR, N);
+            printf("Error: value not in range 1-%d\n",N);
             return;
         }
         hint(board, atoi(parsedCommand[1]), atoi(parsedCommand[2]));
