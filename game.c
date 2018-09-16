@@ -115,13 +115,8 @@ bool val_in_block(cell** board, int column, int row, int val){
             if ((colIndex == column - 1) && (rowIndex == row - 1)) { /* skips check for the cell about to change */ }
             else if (board[rowIndex][colIndex].number == val) {
                 valExist = true;
-                if (board[row - 1][colIndex].isFixed == false) { /* only marking unfixed cells */
-                    if (val != UNASSIGNED) {
-                        board[row - 1][colIndex].asterisk = true;
-                    }
-                    if (val == UNASSIGNED) {
-                        board[row - 1][colIndex].asterisk = false;                      
-                    }
+                if (board[rowIndex][colIndex].isFixed == false && board[rowIndex][colIndex].number != UNASSIGNED) { /* only marking unfixed cells */
+                    board[rowIndex][colIndex].asterisk = true;
                 }
             }
         }
@@ -137,16 +132,11 @@ bool val_in_row(cell** board, int column, int row, int val){
     bool valExist = false;
     int colIndex;
     for (colIndex = 0; colIndex < N; colIndex++) {
-        if(colIndex == column - 1) { /* skips check for the cell about to change */ }
+        if(colIndex == column - 1) {/* not checking cell to be changed*/}
         else if (board[row - 1][colIndex].number == val) {
             valExist = true;
-            if (board[row - 1][colIndex].isFixed == false) { /* only marking unfixed cells */
-                if (val != UNASSIGNED) {
-                    board[row - 1][colIndex].asterisk = true;
-                }
-                if (val == UNASSIGNED) {
-                    board[row - 1][colIndex].asterisk = false;        
-                }
+            if (board[row - 1][colIndex].isFixed == false && board[row - 1][colIndex].number != UNASSIGNED) { /* only marking unfixed cells */
+                board[row - 1][colIndex].asterisk = true;
             }
         }
     }
@@ -157,20 +147,18 @@ bool val_in_row(cell** board, int column, int row, int val){
  * else returns false.
  * if encounters within the column in a cell containing the given value, it marks it with an asterisk */
 bool val_in_column(cell** board, int column, int row, int val) {
+    /*
+     * Checks if value exist in the given column
+     */
     int N = blockRows * blockCols;
     bool valExist = false;
     int rowIndex;
     for (rowIndex = 0; rowIndex < N; rowIndex++) {
-        if (rowIndex == row - 1) { /* skips check for the cell about to change */ }
+        if(rowIndex == row - 1){/*not checking cell to be changed*/}
         else if (board[rowIndex][column - 1].number == val) {
             valExist = true;
-            if (board[rowIndex][column - 1].isFixed == false) { /* only marking unfixed cells */
-                if (val != UNASSIGNED) {
-                    board[rowIndex][column - 1].asterisk = true;
-                }
-                if (val == UNASSIGNED) {
-                    board[rowIndex][column - 1].asterisk = false;               
-                }
+            if (board[rowIndex][column - 1].isFixed == false && board[rowIndex][column - 1].number != UNASSIGNED) { /* only marking unfixed cells */
+                board[rowIndex][column - 1].asterisk = true;
             }
         }
     }
@@ -187,14 +175,18 @@ bool valid_check(cell** board, int column, int row, int val) {
             board[row - 1][column - 1].asterisk = true;
             return false;
         }
-        if (val == UNASSIGNED) {
+        else{
             board[row - 1][column - 1].asterisk = false;
             return true;
         }
     }
+    else{
         board[row - 1][column - 1].asterisk = false;
         return true;
+    }
+
 }
+
 
 /* marks all cells in the sudoku board that contains invalid values according to game rules with an asterisk */
 void mark_asterisks(cell** board) {
@@ -507,7 +499,7 @@ bool validate_risks(cell** board, int column, int row) {
     initialRow = get_block_row_index(row);
     for (colIndex = initialCol; (colIndex < blockCols + initialCol); colIndex++) { /* block check */
         for (rowIndex = initialRow; (rowIndex < blockRows + initialRow); rowIndex++) {
-            if (colIndex == (column-1) && rowIndex == (row-1)) { /* not checking cell changed */
+            if (colIndex == (column - 1) && rowIndex == (row - 1)) { /* not checking cell changed */
             }
             else if (board[rowIndex][colIndex].asterisk){
                 if(valid_check(board, colIndex + 1, rowIndex + 1, board[rowIndex][colIndex].number)){
