@@ -22,9 +22,9 @@
 #include "gurobi_c.h"
 
 /**
- * @brief Valid plays structure representing the valid plays in a sudoku board.
- * cell contains validPlaysArray field which is an array of the valid plays.
- * cell contains numOfPlays field which indicates the number of valid plays.
+ * @brief validPlays structure representing the valid plays in a sudoku board.
+ * validPlays contains validPlaysArray field which is an array of the valid plays.
+ * validPlays contains numOfPlays field which indicates the number of valid plays.
  */
 typedef struct validPlays {
     int* validPlaysArray;
