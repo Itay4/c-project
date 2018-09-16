@@ -49,4 +49,4 @@ int deterministic_backtrack(cell** board, int i, int j);
  */
 void copy_random_cells(cell **solvedBoard, int copyCells, cell** finalBoard);
 
-#endif /* SOLVER_H* /
+#endif /* SOLVER_H */
