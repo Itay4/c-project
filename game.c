@@ -195,10 +195,8 @@ bool valid_check(cell** board, int column, int row, int val) {
             return true;
         }
     }
-    else{
         board[row - 1][column - 1].asterisk = false;
         return true;
-    }
 }
 
 /* marks all cells in the sudoku board that contains invalid values according to game rules with an asterisk */
