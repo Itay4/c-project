@@ -394,9 +394,7 @@ cell** load_board(FILE* fp, char mode){
             token = strtok(NULL, delimiter);
         }
     }
-    if (markErrors || mode == 'E') {
-        mark_asterisks(board);
-    }
+    mark_asterisks(board);
     return board;
 }
 
