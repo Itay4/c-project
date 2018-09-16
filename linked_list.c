@@ -169,6 +169,11 @@ void undo(list* lst, cell** board, char mode){
  * all nodes of moves list except for the head are deleted.
  * prints the original board. */
 void reset(list* lst, cell** board, char mode){
+    if (lst->head->next == NULL){ /* no moves were made */
+        print_board(board, mode);
+        printf("Board reset\n");
+        return;
+    }
     delete_next_nodes(lst->head, lst);
     copy_board(lst->current->board, board);
     print_board(board, mode);
