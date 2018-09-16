@@ -11,25 +11,29 @@
 #ifndef SUDOKU_STACK_H
 #define SUDOKU_STACK_H
 
-
 /* -- Includes -- */
 #include "main_aux.h"
 
-
-
-
-
 /* -- Structs -- */
 
-
+/**
+ * @brief element structure representing an element in a stack.
+ * element contains data field which indicates the data of the element.
+ * element contains board field which indicates a sudoku board.
+ * element contains next field which indicates the next element in the stack.
+ */
 typedef struct element {
     int* data;
     cell** board;
     struct element *next;
 }element;
 
-typedef struct stack_t
-{
+/**
+ * @brief stack structure representing a stack.
+ * stack contains counter field which indicates the number of elements in the stack.
+ * stack contains top field which points to the top element of the stack.
+ */
+typedef struct stack_t {
     int counter;
     element *top;
 }stack;
